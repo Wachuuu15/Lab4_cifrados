@@ -4,17 +4,27 @@ const User = require("../models/user.model");
 
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { correo, contrasena, llavepublica } = req.body;
+    
+    const existingUser = await User.findOne({ where: { correo } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'El email ya está registrado' });
+    }
     
     // Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
 
-    const newUser = new User({ email, password: hashedPassword });
-    await newUser.save();
+    // Crear nuevo usuario
+    await User.create({ 
+      correo, 
+      contrasena: hashedPassword, 
+      llavepublica
+    });
 
     res.json({ message: "Usuario registrado exitosamente" });
   } catch (error) {
-    res.status(500).json({ error: "Error en el registro" });
+    console.error("Error en el registro:", error);  // Agregar esta línea para imprimir el error completo en la consola
+    res.status(500).json({ error: `Error en el registro: ${error.message}` }); // Devuelve un mensaje más detallado
   }
 };
 
