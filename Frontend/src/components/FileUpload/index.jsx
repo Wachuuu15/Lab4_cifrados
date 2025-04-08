@@ -7,7 +7,7 @@ const FileUpload = ({ hasKeys }) => {
   const [shouldSign, setShouldSign] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
-
+  
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setFileName(e.target.files[0].name);
