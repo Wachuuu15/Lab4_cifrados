@@ -1,0 +1,72 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+  }
+  
+  .auth-form {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .error {
+    color: red;
+  }
+  
+  .success {
+    color: green;
+  }
+  
+  .home-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  
+  .tabs button {
+    padding: 10px 20px;
+    background: #eee;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .tabs button.active {
+    background: #007bff;
+    color: white;
+  }
+  
+  .file-list ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .file-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background: white;
+    margin-bottom: 5px;
+    border-radius: 4px;
+  }
+  
+  .file-actions button {
+    margin-left: 10px;
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+  }
