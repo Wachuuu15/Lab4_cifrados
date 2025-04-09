@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { uploadFile } from '../../services/fileService';
+import { uploadFile } from '@services/fileService';
 
 const FileUpload = ({ hasKeys }) => {
   const [file, setFile] = useState(null);

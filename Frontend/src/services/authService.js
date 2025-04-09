@@ -1,6 +1,25 @@
 // src/services/authService.js
 import api from './api';
 
+
+export const verifyToken = async () => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    throw new Error('No hay token disponible');
+  }
+
+  try {
+    const response = await api.get('/auth/verify');
+    return response.user;
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('token');
+      delete api.defaults.headers.common['Authorization'];
+    }
+    throw error;
+  }
+};
+
 export const authService = {
   /**
    * Inicia sesión con email y contraseña
@@ -52,23 +71,6 @@ export const authService = {
     }
   },
 
-  verifyToken: async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No hay token disponible');
-    }
-
-    try {
-      const response = await api.get('/auth/verify');
-      return response.user;
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        localStorage.removeItem('token');
-        delete api.defaults.headers.common['Authorization'];
-      }
-      throw error;
-    }
-  },
 
   /**
    * Cierra la sesión actual
@@ -95,6 +97,8 @@ export const authService = {
   getToken: () => {
     return localStorage.getItem('token');
   },
+
+
   updateToken: (newToken) => {
     localStorage.setItem('token', newToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;

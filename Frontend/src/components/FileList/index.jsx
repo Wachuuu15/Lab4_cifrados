@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { fileService } from '../services/fileService';
+import { fileService } from '@services/fileService';
+
 
 const FileList = () => {
     const [files, setFiles] = useState([]);

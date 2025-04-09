@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '@hooks/useAuth';
 import { FileList, FileUpload, Key, Navbar} from '@components';
 
 const HomePage = () => {
@@ -9,7 +9,7 @@ const HomePage = () => {
   const [activeTab, setActiveTab] = useState('files');
 
   useEffect(() => {
-    // Aquí podrías verificar si el usuario ya tiene claves generadas
+    // verificar si el usuario ya tiene claves generadas
     // setHasKeys(response.data.hasKeys);
   }, []);
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { register } from '../../services/authService';
+import { register } from '@services/authService';
 
 const RegisterForm = ({ onSwitchToLogin }) => {
   const [email, setEmail] = useState('');

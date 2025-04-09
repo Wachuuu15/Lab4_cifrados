@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { verifyToken } from '../services/authService';
+import { verifyToken } from '@services/authService';
+
 
 const useAuth = () => {
   const [user, setUser] = useState(null);

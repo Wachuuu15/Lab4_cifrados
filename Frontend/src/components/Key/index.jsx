@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { generateKeys } from '../../services/fileService';
+import { generateKeys } from '@services/fileService';
+
 
 const KeyGenerator = ({ setHasKeys }) => {
   const [keyType, setKeyType] = useState('RSA');
