@@ -30,10 +30,10 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, contrasena } = req.body;
     const user = await User.findOne({ email });
 
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user || !(await bcrypt.compare(contrasena, user.contrasena))) {
       return res.status(401).json({ error: "Credenciales inválidas" });
     }
 
