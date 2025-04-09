@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const Archivo = require("../models/archivo.model");
 
 exports.guardarArchivo = async (req, res) => {
   try {
@@ -28,4 +29,17 @@ exports.descargarArchivo = async (req, res) => {
 
 exports.verificarArchivo = async (req, res) => {
   // Implementación para verificar la firma del archivo
+};
+
+exports.listarArchivos = async (req, res) => {
+  try {
+    const archivos = await Archivo.findAll({
+      attributes: ["id", "correo", "nombre", "contenido", "hash", "tipofirma"]
+    });
+
+    res.json(archivos);
+  } catch (error) {
+    console.error("Error al listar archivos:", error);
+    res.status(500).json({ error: "Error al listar archivos" });
+  }
 };
