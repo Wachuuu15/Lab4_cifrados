@@ -15,7 +15,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
     try {
       const token = await login(email, password);
       localStorage.setItem('token', token);
-      navigate('/home');
+      navigate('/AsyStorage');
     } catch (err) {
       setError('Credenciales incorrectas');
     }
@@ -53,7 +53,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
         </form>
         <div className={styles.switchText}>
           ¿No tienes cuenta?{' '}
-          <button onClick={onSwitchToRegister} className={styles.linkButton}>
+          <button onClick={() => navigate('/AsyStorage/register')} className={styles.linkButton}>
             Regístrate aquí
           </button>
         </div>

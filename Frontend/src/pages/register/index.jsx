@@ -17,7 +17,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
       await register(email, password);
       setSuccess(true);
       setTimeout(() => {
-        onSwitchToLogin();
+        navigate('/AsyStorage/login');
       }, 2000);
     } catch (err) {
       setError('Error en el registro. Intenta nuevamente.');
@@ -65,7 +65,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         
         <div className={styles.switchText}>
           ¿Ya tienes cuenta?{' '}
-          <button onClick={onSwitchToLogin} className={styles.linkButton}>
+          <button onClick={() => navigate('/AsyStorage/login')} className={styles.linkButton}>
             Inicia sesión aquí
           </button>
         </div>
