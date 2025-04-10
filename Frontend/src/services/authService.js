@@ -12,7 +12,8 @@ import api from './api';
     try {
       const response = await api.post('/auth/login', { 
         email, 
-        password 
+        contrasena: password,
+        llavepublica: null
       });
       
       // Almacenar el token en localStorage
@@ -40,8 +41,10 @@ import api from './api';
     export const register = async (email, password) => {
       try {
         const response = await api.post('/auth/register', {
-          email,
-          password
+          correo: email,
+          contrasena: password,
+          llavepublica: null,
+          tipofirma: null
         });
         return response;
       } catch (error) {
