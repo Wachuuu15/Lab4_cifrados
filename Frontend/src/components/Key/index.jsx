@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { fileService } from '@services/fileService';
-
-
+import classNames from 'classnames';
+import styles from './Key.module.scss';
 
 const KeyGenerator = ({ setHasKeys }) => {
   const [keyType, setKeyType] = useState('RSA');
@@ -13,7 +13,7 @@ const KeyGenerator = ({ setHasKeys }) => {
     try {
       const keys = await fileService.generateKeys(keyType);
       
-      // descarga la clave privada
+      // Download private key
       const privateKeyBlob = new Blob([keys.privateKey], { type: 'text/plain' });
       const privateKeyUrl = URL.createObjectURL(privateKeyBlob);
       const privateKeyLink = document.createElement('a');
@@ -24,7 +24,7 @@ const KeyGenerator = ({ setHasKeys }) => {
       setMessage({ text: 'Claves generadas exitosamente', type: 'success' });
       setHasKeys(true);
     } catch (error) {
-      setMessage({ text: 'Error generando claves', type: 'error' });
+      setMessage({ text: error.message || 'Error generando claves', type: 'error' });
     } finally {
       setIsGenerating(false);
       setTimeout(() => setMessage({ text: '', type: '' }), 3000);
@@ -32,25 +32,51 @@ const KeyGenerator = ({ setHasKeys }) => {
   };
 
   return (
-    <div className="key-generator">
-      <h3>Generar Claves</h3>
-      <div>
-        <label>
+    <div className={styles.container}>
+      <h3 className={styles.title}>Generar Claves</h3>
+      
+      <div className={styles.formGroup}>
+        <label className={styles.label}>
           Tipo de Clave:
-          <select value={keyType} onChange={(e) => setKeyType(e.target.value)}>
+          <select 
+            value={keyType} 
+            onChange={(e) => setKeyType(e.target.value)}
+            className={styles.select}
+            disabled={isGenerating}
+          >
             <option value="RSA">RSA</option>
             <option value="ECC">ECC (Elliptic Curve)</option>
           </select>
         </label>
       </div>
-      <button onClick={handleGenerate} disabled={isGenerating}>
-        {isGenerating ? 'Generando...' : 'Generar Claves'}
+      
+      <button 
+        onClick={handleGenerate} 
+        disabled={isGenerating}
+        className={classNames(styles.generateButton, {
+          [styles.generating]: isGenerating
+        })}
+      >
+        {isGenerating ? (
+          <>
+            <span className={styles.spinner}></span>
+            Generando...
+          </>
+        ) : 'Generar Claves'}
       </button>
-      <p className="note">
-        Nota: La clave privada se descargará automáticamente. Guárdala en un lugar seguro.
+      
+      <p className={styles.note}>
+        <strong>Nota:</strong> La clave privada se descargará automáticamente. 
+        Guárdala en un lugar seguro.
       </p>
+      
       {message.text && (
-        <p className={`message ${message.type}`}>{message.text}</p>
+        <div className={classNames(styles.message, {
+          [styles.success]: message.type === 'success',
+          [styles.error]: message.type === 'error'
+        })}>
+          {message.text}
+        </div>
       )}
     </div>
   );

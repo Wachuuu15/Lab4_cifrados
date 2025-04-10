@@ -1,54 +1,109 @@
 import { useState, useEffect } from 'react';
 import { fileService } from '@services/fileService';
-
+import classNames from 'classnames';
+import styles from './FileList.module.scss';
 
 const FileList = () => {
-    const [files, setFiles] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-  
-    useEffect(() => {
-      const loadFiles = async () => {
-        try {
-          const data = await fileService.getFiles();
-          setFiles(data);
-        } catch (err) {
-          setError(err.message);
-        } finally {
-          setLoading();
-        }
-      };
-  
-      loadFiles();
-    }, []);
-  
-    const handleDownload = async (fileId) => {
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [downloading, setDownloading] = useState({});
+
+  useEffect(() => {
+    const loadFiles = async () => {
       try {
-        await fileService.download(fileId);
+        const data = await fileService.getFiles();
+        setFiles(data);
       } catch (err) {
-        alert(`Error al descargar: ${err.message}`);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     };
-  
-    if (loading) return <div>Cargando archivos...</div>;
-    if (error) return <div>Error: {error}</div>;
-  
-    return (
-      <div>
-        <h2>Mis Archivos</h2>
-        <ul>
+
+    loadFiles();
+  }, []);
+
+  const handleDownload = async (fileId) => {
+    try {
+      setDownloading(prev => ({ ...prev, [fileId]: true }));
+      await fileService.download(fileId);
+    } catch (err) {
+      setError(`Error al descargar: ${err.message}`);
+      setTimeout(() => setError(null), 3000);
+    } finally {
+      setDownloading(prev => ({ ...prev, [fileId]: false }));
+    }
+  };
+
+  if (loading) return (
+    <div className={styles.loadingContainer}>
+      <div className={styles.spinner}></div>
+      <p>Cargando archivos...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className={styles.errorContainer}>
+      <p className={styles.errorMessage}>{error}</p>
+      <button 
+        className={styles.retryButton}
+        onClick={() => window.location.reload()}
+      >
+        Reintentar
+      </button>
+    </div>
+  );
+
+  return (
+    <div className={styles.container}>
+      <h2 className={styles.title}>Mis Archivos</h2>
+      
+      {files.length === 0 ? (
+        <div className={styles.emptyState}>
+          <svg className={styles.emptyIcon} viewBox="0 0 24 24">
+            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+          </svg>
+          <p>No tienes archivos subidos aún</p>
+        </div>
+      ) : (
+        <ul className={styles.fileList}>
           {files.map(file => (
-            <li key={file.id}>
-              {file.name}
-              <button onClick={() => handleDownload(file.id)}>
-                Descargar
+            <li key={file.id} className={styles.fileItem}>
+              <div className={styles.fileInfo}>
+                <svg className={styles.fileIcon} viewBox="0 0 24 24">
+                  <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+                </svg>
+                <div className={styles.fileDetails}>
+                  <span className={styles.fileName}>{file.name}</span>
+                  <span className={styles.fileMeta}>
+                    {new Date(file.uploadDate).toLocaleDateString()} · 
+                    {(file.size / (1024 * 1024)).toFixed(2)} MB
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => handleDownload(file.id)}
+                disabled={downloading[file.id]}
+                className={classNames(styles.downloadButton, {
+                  [styles.downloading]: downloading[file.id]
+                })}
+              >
+                {downloading[file.id] ? (
+                  <>
+                    <span className={styles.downloadSpinner}></span>
+                    Descargando...
+                  </>
+                ) : (
+                  'Descargar'
+                )}
               </button>
             </li>
           ))}
         </ul>
-      </div>
-    );
-  };
-  
+      )}
+    </div>
+  );
+};
+
 export default FileList;
-  
