@@ -38,24 +38,28 @@ api.interceptors.response.use((response) => {
 });
 
 // Métodos 
-export const downloadFile = async (url, fileName) => {
+export const downloadFile = async (url, defaultName, onDownloadProgress) => {
   const response = await api.get(url, {
-    responseType: 'blob'
+    responseType: 'blob',
+    onDownloadProgress,
   });
-  
-  // Crear el objeto URL para el blob
-  const blobUrl = window.URL.createObjectURL(new Blob([response]));
-  
-  // Crear enlace y disparar la descarga
-  const link = document.createElement('a');
-  link.href = blobUrl;
-  link.setAttribute('download', fileName);
-  document.body.appendChild(link);
-  link.click();
-  
-  // Limpieza
-  link.remove();
-  window.URL.revokeObjectURL(blobUrl);
+
+  // Obtener nombre del archivo del header Content-Disposition
+  const contentDisposition = response.headers['content-disposition'];
+  let fileName = defaultName;
+
+  if (contentDisposition) {
+    const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+    if (fileNameMatch && fileNameMatch[1]) {
+      fileName = fileNameMatch[1].replace(/"/g, '');
+    }
+  }
+
+  return {
+    fileName,
+    blob: new Blob([response.data]),
+    mimeType: response.headers['content-type'],
+  };
 };
 
 export const uploadFile = async (url, formData, onUploadProgress) => {

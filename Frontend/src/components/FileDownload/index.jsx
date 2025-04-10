@@ -9,6 +9,7 @@ const FileDownload = () => {
   const [error, setError] = useState(null);
   const [verificationStatus, setVerificationStatus] = useState({});
   const [downloadProgress, setDownloadProgress] = useState({});
+  const [activeDownloads, setActiveDownloads] = useState({});
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -26,7 +27,11 @@ const FileDownload = () => {
   }, []);
 
   const handleDownload = async (fileId, verify = false) => {
+    // Bloquear múltiples descargas del mismo archivo
+    if (activeDownloads[fileId]) return;
+    
     try {
+      setActiveDownloads(prev => ({ ...prev, [fileId]: true }));
       setDownloadProgress(prev => ({ ...prev, [fileId]: 0 }));
       
       if (verify) {
@@ -54,10 +59,62 @@ const FileDownload = () => {
       setError(`Error al descargar: ${err.message}`);
     } finally {
       setTimeout(() => {
-        setDownloadProgress(prev => ({ ...prev, [fileId]: undefined }));
-        setVerificationStatus(prev => ({ ...prev, [fileId]: undefined }));
-      }, 3000);
+        setDownloadProgress(prev => {
+          const newState = { ...prev };
+          delete newState[fileId];
+          return newState;
+        });
+        setActiveDownloads(prev => {
+          const newState = { ...prev };
+          delete newState[fileId];
+          return newState;
+        });
+      }, 1000);
     }
+  };
+
+  // Componente de botón reutilizable
+  const DownloadButton = ({ fileId, isSigned, fileName }) => {
+    const isDownloading = activeDownloads[fileId];
+    const progress = downloadProgress[fileId] || 0;
+    const verification = verificationStatus[fileId];
+
+    return (
+      <div className={styles.buttonGroup}>
+        <button
+          className={classNames(styles.button, styles.downloadButton, {
+            [styles.disabled]: isDownloading
+          })}
+          onClick={() => handleDownload(fileId, false)}
+          disabled={isDownloading}
+        >
+          {isDownloading && progress > 0 
+            ? `${progress}%` 
+            : 'Descargar'}
+        </button>
+        
+        {isSigned && (
+          <button
+            className={classNames(styles.button, styles.verifyButton, {
+              [styles.disabled]: isDownloading
+            })}
+            onClick={() => handleDownload(fileId, true)}
+            disabled={isDownloading}
+          >
+            Verificar y Descargar
+          </button>
+        )}
+        
+        {verification && (
+          <span className={classNames(styles.verificationStatus, {
+            [styles.valid]: verification.includes('✓'),
+            [styles.invalid]: verification.includes('✗')
+          })}>
+            {verification}
+          </span>
+        )}
+      </div>
+    );
   };
 
   if (loading) return (
@@ -101,44 +158,11 @@ const FileDownload = () => {
                 </span>
               </div>
               
-              <div className={styles.fileActions}>
-                {downloadProgress[file.id] !== undefined ? (
-                  <div className={styles.progressBar}>
-                    <div 
-                      className={styles.progressFill}
-                      style={{ width: `${downloadProgress[file.id]}%` }}
-                    ></div>
-                    <span className={styles.progressText}>{downloadProgress[file.id]}%</span>
-                  </div>
-                ) : (
-                  <>
-                    <button 
-                      className={classNames(styles.button, styles.downloadButton)}
-                      onClick={() => handleDownload(file.id)}
-                    >
-                      Descargar
-                    </button>
-                    
-                    {file.signed && (
-                      <button
-                        className={classNames(styles.button, styles.verifyButton)}
-                        onClick={() => handleDownload(file.id, true)}
-                      >
-                        Verificar y Descargar
-                      </button>
-                    )}
-                  </>
-                )}
-                
-                {verificationStatus[file.id] && (
-                  <span className={classNames(styles.verificationStatus, {
-                    [styles.valid]: verificationStatus[file.id].includes('✓'),
-                    [styles.invalid]: verificationStatus[file.id].includes('✗')
-                  })}>
-                    {verificationStatus[file.id]}
-                  </span>
-                )}
-              </div>
+              <DownloadButton 
+                fileId={file.id} 
+                isSigned={file.signed} 
+                fileName={file.name}
+              />
             </li>
           ))}
         </ul>

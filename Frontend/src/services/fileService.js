@@ -2,35 +2,47 @@
 import api, { downloadFile, uploadFile as uploadFileFromApi } from './api';
 
 export const fileService = {
+
   getFiles: async () => {
     return api.get('/archivos');
   },
 
-  download: async (fileId, verify = false, onDownloadProgress) => {
-    const response = await api.get(`/archivos/${fileId}/descargar?verify=${verify}`, {
-      responseType: 'blob',
-      onDownloadProgress
-    });
-    
-    const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
-    
-    const contentDisposition = response.headers['content-disposition'];
-    const fileName = contentDisposition
-      ? contentDisposition.split('filename=')[1].replace(/"/g, '')
-      : `file_${fileId}`;
-    
-    // Crear enlace y disparar la descarga
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.setAttribute('download', fileName);
-    document.body.appendChild(link);
-    link.click();
-    
-    // Limpieza
-    link.remove();
-    window.URL.revokeObjectURL(blobUrl);
-    
-    return fileName;
+  /**
+   * Descarga un archivo
+   * @param {string} fileId - ID del archivo
+   * @param {boolean} verify - Verificar firma digital
+   * @param {function} onProgress - Callback para progreso
+   * @returns {Promise<void>}
+   */
+  download: async (fileId, verify = false, onProgress) => {
+    try {
+      const { fileName, blob } = await downloadFile(
+        `/archivos/${fileId}/descargar?verify=${verify}`,
+        `archivo_${fileId}`,
+        onProgress
+      );
+
+      // Crear objeto URL para el blob
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // Crear enlace y disparar descarga
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+
+      // Limpieza
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      }, 100);
+
+      return fileName;
+    } catch (error) {
+      console.error('Error descargando archivo:', error);
+      throw new Error(error.message || 'Error al descargar el archivo');
+    }
   },
 
   upload: async (fileData, shouldSign = false) => {

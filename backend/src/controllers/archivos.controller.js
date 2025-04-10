@@ -101,6 +101,8 @@ exports.guardarArchivo = async (req, res) => {
 exports.descargarArchivo = async (req, res) => {
   try {
     const { id } = req.params;
+    const { verify } = req.query;
+
 
     // Buscar el archivo en la base de datos
     const archivo = await Archivo.findOne({ where: { id } });
@@ -108,6 +110,14 @@ exports.descargarArchivo = async (req, res) => {
       return res.status(404).json({ error: "Archivo no encontrado" });
     }
 
+    // Verificación de firma si se solicita
+    if (verify === 'true') {
+      const esValido = await verificarFirmaDigital(archivo);
+        if (!esValido) {
+          return res.status(403).json({ error: "Firma digital no válida" });
+        }
+    }
+    
     // Ruta del archivo cifrado
     const archivoCifradoPath = path.join(__dirname, "../../uploads", archivo.contenido);
 
@@ -116,17 +126,18 @@ exports.descargarArchivo = async (req, res) => {
       return res.status(404).json({ error: "Archivo cifrado no encontrado en el servidor" });
     }
 
-    // Enviar el archivo cifrado
-    res.download(archivoCifradoPath, archivo.nombre, (err) => {
-      if (err) {
-        console.error("Error al enviar el archivo:", err);
-        res.status(500).json({ error: "Error al descargar el archivo" });
-      }
-    });
-  } catch (error) {
-    console.error("Error al descargar el archivo:", error);
-    res.status(500).json({ error: "Error al descargar el archivo" });
-  }
+    // Configurar headers
+    res.setHeader('Content-Disposition', `attachment; filename="${archivo.nombre}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+
+    // Stream el archivo
+    const fileStream = fs.createReadStream(archivoPath);
+    fileStream.pipe(res);
+    
+    } catch (error) {
+      console.error("Error al descargar el archivo:", error);
+      res.status(500).json({ error: "Error al descargar el archivo" });
+    }
 };
 
 exports.verificarArchivo = async (req, res) => {
