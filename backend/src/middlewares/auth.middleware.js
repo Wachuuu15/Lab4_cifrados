@@ -1,12 +1,32 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/user.model");
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const token = req.headers["authorization"];
-  if (!token) return res.status(403).json({ error: "Acceso denegado" });
+  if (!token) {
+    return res.status(403).json({ error: "Acceso denegado: Token no proporcionado" });
+  }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).json({ error: "Token inválido" });
-    req.user = decoded;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decoded || !decoded.userEmail) {
+      return res.status(401).json({ error: "Token inválido." });
+    }
+
+    const user = await User.findOne({ where: { correo: decoded.userEmail } });
+
+    if (!user) {
+      return res.status(401).json({ error: "Usuario no encontrado" });
+    }
+
+    req.user = {
+      id: user.correo,
+      correo: user.correo,
+    };
+
     next();
-  });
+  } catch (error) {
+    res.status(401).json({ error: `Token inválido: ${error.message}` });
+  }
 };
