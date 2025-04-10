@@ -67,7 +67,7 @@ exports.guardarArchivo = async (req, res) => {
       contenido: archivoCifrado ? archivoCifrado : null,
       hash,
       firma: signature ? signature : null,
-      tipofirma: firmar === "true" ? tipoFirma : "RSA",
+      tipofirma: firmar === "true" ? tipoFirma : (firmar === "false" && tipoFirma === "RSA" ? "RSA" : tipoFirma),
     });
 
     fs.unlinkSync(archivo.path);
