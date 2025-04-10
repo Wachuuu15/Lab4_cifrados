@@ -47,6 +47,27 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.verifyToken = (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ error: "No se proporcionó un token" });
+  }
+
+  const token = authHeader;
+
+  if (!token) {
+    return res.status(401).json({ error: "Token no válido" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ user: decoded });
+  } catch (error) {
+    res.status(401).json({ error: `Token inválido: ${error.message}` });
+  }
+};
+
 exports.generateKeys = async (req, res) => {
   const { algorithm } = req.body; // ECC o RSA
   if (!algorithm || (algorithm !== "RSA" && algorithm !== "ECC")) {

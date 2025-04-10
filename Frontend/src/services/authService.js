@@ -15,17 +15,20 @@ import api from './api';
         contrasena: password,
         llavepublica: null
       });
-      
-      // Almacenar el token en localStorage
-      localStorage.setItem('token', response.token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${response.token}`;
+
+      const token = response.token;
+      if (!token) {
+        throw new Error('No se recibió un token válido del servidor');
+      }
+  
+      localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `${token}`;
       
       return {
-        token: response.token,
+        token,
         user: response.user
       };
     } catch (error) {
-    
       localStorage.removeItem('token');
       delete api.defaults.headers.common['Authorization'];
       throw error;
@@ -106,7 +109,7 @@ import api from './api';
    */
   export const updateToken = (newToken) => {
     localStorage.setItem('token', newToken);
-    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+    api.defaults.headers.common['Authorization'] = `${newToken}`;
   };
 
 export const authService = {

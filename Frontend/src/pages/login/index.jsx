@@ -13,7 +13,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = await login(email, password);
+      const { token, user } = await login(email, password);
       localStorage.setItem('token', token);
       navigate('/AsyStorage/files');
     } catch (err) {
