@@ -11,16 +11,15 @@ const KeyGenerator = ({ setHasKeys }) => {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      const keys = await fileService.generateKeys(keyType);
-      
-      // Download private key
-      const privateKeyBlob = new Blob([keys.privateKey], { type: 'text/plain' });
+      const response = await fileService.generateKeys(keyType);
+  
+      const privateKeyBlob = new Blob([response.privateKey], { type: 'text/plain' });
       const privateKeyUrl = URL.createObjectURL(privateKeyBlob);
       const privateKeyLink = document.createElement('a');
       privateKeyLink.href = privateKeyUrl;
       privateKeyLink.download = `private_key_${keyType}.pem`;
       privateKeyLink.click();
-      
+  
       setMessage({ text: 'Claves generadas exitosamente', type: 'success' });
       setHasKeys(true);
     } catch (error) {

@@ -7,41 +7,42 @@ export const fileService = {
   },
 
   download: async (fileId, verify = false, onDownloadProgress) => {
-    const response = await api.get(`/archivos/${fileId}/descargar?verify=${verify}`, {
+    const response = await api.get(`/archivos/${fileId}/descargar`, {
       responseType: 'blob',
-      onDownloadProgress
+      onDownloadProgress,
     });
-    
+  
     const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
-    
+  
+    // Intentar obtener el nombre del archivo desde Content-Disposition
     const contentDisposition = response.headers['content-disposition'];
     const fileName = contentDisposition
       ? contentDisposition.split('filename=')[1].replace(/"/g, '')
-      : `file_${fileId}`;
-    
+      : `file_${fileId}`; // Nombre por defecto si no está el encabezado
+  
     // Crear enlace y disparar la descarga
     const link = document.createElement('a');
     link.href = blobUrl;
     link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
-    
+  
     // Limpieza
     link.remove();
     window.URL.revokeObjectURL(blobUrl);
-    
+  
     return fileName;
   },
 
-  upload: async (fileData, shouldSign = false) => {
-    const formData = new FormData();
-    formData.append('file', fileData.file);
-    formData.append('fileName', fileData.fileName);
-    formData.append('shouldSign', shouldSign);
-
-    return uploadFileFromApi('/archivos/guardar', formData, (progressEvent) => {
-      const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-      console.log(`Upload progress: ${percentCompleted}%`);
+  uploadFile: async (formData) => {
+    return api.post('/archivos/guardar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        console.log(`Progreso de subida: ${percentCompleted}%`);
+      },
     });
   },
 
@@ -50,15 +51,7 @@ export const fileService = {
   },
 
   generateKeys: async (keyType) => {
-    const response = await api.post('/keys/generate', { keyType });
-
-    // Descargar la clave privada automáticamente
-    const privateKeyBlob = new Blob([response.privateKey], { type: 'text/plain' });
-    const privateKeyUrl = URL.createObjectURL(privateKeyBlob);
-    const link = document.createElement('a');
-    link.href = privateKeyUrl;
-    link.download = `private_key_${keyType}.pem`;
-    link.click();
+    const response = await api.post('/auth/generate-keys', { algorithm: keyType });
     
     return response;
   }

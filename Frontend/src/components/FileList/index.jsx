@@ -75,11 +75,12 @@ const FileList = () => {
                   <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
                 </svg>
                 <div className={styles.fileDetails}>
-                  <span className={styles.fileName}>{file.name}</span>
-                  <span className={styles.fileMeta}>
-                    {new Date(file.uploadDate).toLocaleDateString()} · 
-                    {(file.size / (1024 * 1024)).toFixed(2)} MB
-                  </span>
+                  <span className={styles.fileName}>Archivo: {file.nombre}</span>
+                  <span className={styles.fileName}>Autor: {file.correo}</span>
+                  <span className={styles.fileName}>Firmado: {file.firma ? 'Si' : 'No'}</span>
+                  {file.firma && (
+                    <span className={styles.fileName}>Firmado con: {file.tipofirma}</span>
+                  )}
                 </div>
               </div>
               <button

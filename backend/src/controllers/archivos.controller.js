@@ -55,7 +55,7 @@ exports.guardarArchivo = async (req, res) => {
       }
     }
 
-    const archivoCifradoNombre = `${Date.now()}_${archivo.originalname}`;
+    const archivoCifradoNombre = `${archivo.originalname}`;
     const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivoCifradoNombre);
 
     fs.writeFileSync(archivoCifradoPath, signature ? signature : archivoCifrado ? archivoCifrado : hash);
@@ -108,12 +108,15 @@ exports.descargarArchivo = async (req, res) => {
     }
 
     // Ruta del archivo cifrado
-    const archivoCifradoPath = path.join(__dirname, "../../uploads", archivo.contenido);
+    const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivo.nombre);
 
     // Verificar si el archivo existe en el sistema de archivos
     if (!fs.existsSync(archivoCifradoPath)) {
       return res.status(404).json({ error: "Archivo cifrado no encontrado en el servidor" });
     }
+
+    // Configurar el encabezado Content-Disposition
+    res.setHeader("Content-Disposition", `attachment; filename="${archivo.nombre}"`);
 
     // Enviar el archivo cifrado
     res.download(archivoCifradoPath, archivo.nombre, (err) => {

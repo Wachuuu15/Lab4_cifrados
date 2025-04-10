@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileList, FileUpload, Keys, Navbar} from '@components';
+import api from '@services/api';
 import useAuth from '@hooks/useAuth';
 import styles from "./home.module.scss";
 
@@ -10,9 +11,21 @@ const HomePage = () => {
   const [activeTab, setActiveTab] = useState('files');
 
   useEffect(() => {
-    // verificar si el usuario ya tiene claves generadas
-    // setHasKeys(response.data.hasKeys);
-  }, []);
+    // Verificar si el usuario ya tiene claves generadas
+    const fetchPublicKey = async () => {
+      if (user) {
+        try {
+          const response = await api.get(`/auth/getPublicKey/${user.userEmail}`);
+          console.log('Llave pública:', response.llavepublica);
+          setHasKeys(!!response.llavepublica);
+        } catch (error) {
+          console.error('Error al obtener la llave pública:', error);
+        }
+      }
+    };
+
+    fetchPublicKey();
+  }, [user]);
 
   return (
     <div className={styles.homeContainer}>

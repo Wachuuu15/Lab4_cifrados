@@ -7,30 +7,40 @@ const FileUpload = ({ hasKeys }) => {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [shouldSign, setShouldSign] = useState(false);
+  const [privateKey, setPrivateKey] = useState(null);
+  const [privateKeyName, setPrivateKeyName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
-  
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setFileName(e.target.files[0].name);
   };
 
+  const handlePrivateKeyChange = (e) => {
+    const keyFile = e.target.files[0];
+    setPrivateKey(keyFile);
+    setPrivateKeyName(keyFile ? keyFile.name : '');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return;
-
+  
     setIsLoading(true);
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('fileName', fileName);
-      formData.append('shouldSign', shouldSign);
-
-      await fileService.uploadFile(formData);
+      formData.append('file', file); // Archivo principal
+      formData.append('clavePrivada', privateKey); // Clave privada como texto
+      formData.append('firmar', shouldSign); // Indicar si se debe firmar
+  
+      await fileService.uploadFile(formData); // Llamada al servicio
       setMessage({ text: 'Archivo subido exitosamente', type: 'success' });
-      // Reset form after successful upload
+  
+      // Resetear el formulario
       setFile(null);
       setFileName('');
+      setPrivateKey(null);
       setShouldSign(false);
       e.target.reset();
     } catch (error) {
@@ -58,6 +68,22 @@ const FileUpload = ({ hasKeys }) => {
             />
           </label>
         </div>
+
+        {shouldSign && (
+          <div className={styles.formGroup}>
+            <label className={styles.textAreaLabel}>
+              <span className={styles.textAreaText}>Pegar llave privada (.pem):</span>
+              <textarea
+                value={privateKey || ''}
+                onChange={(e) => setPrivateKey(e.target.value)}
+                className={styles.textArea}
+                placeholder="Pega aquí tu llave privada"
+                disabled={!shouldSign} // Solo habilitar si se selecciona firmar
+                required
+              />
+            </label>
+          </div>
+        )}
         
         <div className={styles.formGroup}>
           <label className={styles.checkboxLabel}>

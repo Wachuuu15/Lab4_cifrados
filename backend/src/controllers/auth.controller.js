@@ -102,10 +102,7 @@ exports.generateKeys = async (req, res) => {
 
     await savePublicKeyToDatabase(userEmail, publicKey, algorithm); // Guarda llave en BD
 
-    // Retornar la llave privada para descarga (saber si sí funciona)
-    res.setHeader("Content-Disposition", "attachment; filename=private_key.pem");
-    res.setHeader("Content-Type", "application/x-pem-file");
-    res.status(200).send(privateKey);
+    res.status(200).json({ privateKey });
   } catch (error) {
     console.error("Error al generar las llaves:", error);
     res.status(500).json({ message: `Error al generar las llaves: ${error.message}` });
@@ -127,7 +124,6 @@ const savePublicKeyToDatabase = async (userEmail, publicKey, algorithm) => {
 exports.getPublicKey = async (req, res) => {
   try {
     const { correo } = req.params;
-    console.log(`Buscando llave pública para el usuario: ${correo}`);
 
     // Buscar al usuario por correo
     const user = await User.findOne({ where: { correo } });
