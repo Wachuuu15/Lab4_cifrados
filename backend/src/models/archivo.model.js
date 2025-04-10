@@ -16,12 +16,16 @@ const Archivo = sequelize.define("Archivo", {
     allowNull: false
     },
     contenido: {
-    type: DataTypes.TEXT,
-    allowNull: false
+    type: DataTypes.BLOB,
+    allowNull: true
     },
     hash: {
     type: DataTypes.TEXT,
     allowNull: false
+    },
+    firma: {
+    type: DataTypes.TEXT,
+    allowNull: true
     },
     tipofirma: {
     type: DataTypes.STRING(10),
