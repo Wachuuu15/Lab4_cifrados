@@ -6,10 +6,11 @@ CREATE TABLE usuarios (
 );
 
 CREATE TABLE archivos (
-	id SERIAL PRIMARY KEY, 
+    id SERIAL PRIMARY KEY, 
     correo VARCHAR(255) REFERENCES usuarios(correo) ON DELETE CASCADE,
     nombre VARCHAR(50) NOT NULL,
-    contenido TEXT,
+    contenido BYTEA,
     hash TEXT,
+    firma TEXT,
     tipoFirma VARCHAR(10)
 );

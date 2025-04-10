@@ -3,6 +3,7 @@ const User = require("../models/user.model");
 const fs = require("fs");
 const path = require("path");
 const Archivo = require("../models/archivo.model");
+const User = require("../models/user.model");
 
 exports.guardarArchivo = async (req, res) => {
   try {
@@ -130,39 +131,45 @@ exports.descargarArchivo = async (req, res) => {
 
 exports.verificarArchivo = async (req, res) => {
   try {
-    const { firma, clavePublica } = req.body;
+    const { firma, correo } = req.body;
     const archivo = req.file;
 
     if (!archivo) {
       return res.status(400).json({ error: "No se proporcionó un archivo para verificar" });
     }
 
-    if (!firma || !clavePublica) {
-      return res.status(400).json({ error: "Se requiere la firma y la clave pública" });
+    if (!firma || !correo) {
+      return res.status(400).json({ error: "Se requiere la firma y el correo del firmante" });
     }
 
-    // Leer el contenido del archivo
+    // Buscar al usuario por su correo
+    const usuario = await User.findOne({ where: { correo } });
+    if (!usuario || !usuario.llavepublica) {
+      return res.status(404).json({ error: "Usuario no encontrado o sin llave pública" });
+    }
+
+    const clavePublica = usuario.llavepublica;
+
+    // Leer contenido del archivo
     const contenido = fs.readFileSync(archivo.path);
 
-    // Generar el hash SHA-256 del archivo
+    // Generar hash SHA-256
     const hash = crypto.createHash("sha256").update(contenido).digest("hex");
 
-    // Verificar la firma con la clave pública
+    // Verificar firma
     const verifier = crypto.createVerify("SHA256");
     verifier.update(hash);
     verifier.end();
 
     const esValida = verifier.verify(clavePublica, firma, "hex");
 
-    // Eliminar archivo temporal
-    fs.unlinkSync(archivo.path);
+    fs.unlinkSync(archivo.path); // Eliminar archivo temporal
 
     if (esValida) {
       res.json({ mensaje: "Firma verificada exitosamente", valido: true });
     } else {
       res.status(400).json({ mensaje: "Firma inválida", valido: false });
     }
-
   } catch (error) {
     console.error("Error al verificar el archivo:", error);
     res.status(500).json({ error: "Error interno al verificar la firma" });
