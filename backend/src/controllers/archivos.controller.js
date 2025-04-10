@@ -58,7 +58,7 @@ exports.guardarArchivo = async (req, res) => {
     const archivoCifradoNombre = `${Date.now()}_${archivo.originalname}`;
     const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivoCifradoNombre);
 
-    fs.writeFileSync(archivoCifradoPath, archivoCifrado ? archivoCifrado : hash);
+    fs.writeFileSync(archivoCifradoPath, signature ? signature : archivoCifrado ? archivoCifrado : hash);
 
     // Guardar en BD
     let nuevoArchivo = await Archivo.findOne({ where: { nombre: archivo.originalname } });
