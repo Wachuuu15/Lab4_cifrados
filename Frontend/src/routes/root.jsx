@@ -1,4 +1,3 @@
-import { NavBar } from "@components/index";
 import { Outlet, useLocation } from "react-router-dom";
 
 const Root = () => {
@@ -7,7 +6,6 @@ const Root = () => {
 
   return (
     <>
-      <NavBar isLanding={isLanding} />
       <Outlet />
     </>
   );

@@ -1,33 +1,14 @@
 // src/services/authService.js
 import api from './api';
 
-
-export const verifyToken = async () => {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    throw new Error('No hay token disponible');
-  }
-
-  try {
-    const response = await api.get('/auth/verify');
-    return response.user;
-  } catch (error) {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
-    }
-    throw error;
-  }
-};
-
-export const authService = {
   /**
    * Inicia sesión con email y contraseña
    * @param {string} email 
    * @param {string} password 
    * @returns {Promise<{token: string, user: object}>}
    */
-  login: async (email, password) => {
+
+  export const login =  async (email, password) => {
     try {
       const response = await api.post('/auth/login', { 
         email, 
@@ -48,59 +29,88 @@ export const authService = {
       delete api.defaults.headers.common['Authorization'];
       throw error;
     }
-  },
+  };
 
-  /**
+    /**
    * Registra un nuevo usuario
    * @param {string} email 
    * @param {string} password 
    * @returns {Promise<{message: string}>}
    */
-  register: async (email, password) => {
-    try {
-      const response = await api.post('/auth/register', {
-        email,
-        password
-      });
-      return response;
-    } catch (error) {
-      if (error.response && error.response.status === 409) {
-        throw new Error('El email ya está registrado');
+    export const register = async (email, password) => {
+      try {
+        const response = await api.post('/auth/register', {
+          email,
+          password
+        });
+        return response;
+      } catch (error) {
+        if (error.response && error.response.status === 409) {
+          throw new Error('El email ya está registrado');
+        }
+        throw error;
       }
-      throw error;
-    }
-  },
-
-
-  /**
+    };
+    
+    /**
    * Cierra la sesión actual
    * @param {boolean} [callApi=false] - Si es true, llama al endpoint de logout en el backend
    * @returns {Promise<void>}
    */
-  logout: async (callApi = false) => {
-    if (callApi) {
-      try {
-        await api.post('/auth/logout');
-      } catch (error) {
-        console.error('Error al cerrar sesión en el backend:', error);
+  export const  logout = async (callApi = false) => {
+      if (callApi) {
+        try {
+          await api.post('/auth/logout');
+        } catch (error) {
+          console.error('Error al cerrar sesión en el backend:', error);
+        }
       }
+      
+      localStorage.removeItem('token');
+      delete api.defaults.headers.common['Authorization'];
+  };
+  
+
+  export const verifyToken = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No hay token disponible');
     }
-    
-    localStorage.removeItem('token');
-    delete api.defaults.headers.common['Authorization'];
-  },
+
+    try {
+      const response = await api.get('/auth/verify');
+      return response.user;
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        localStorage.removeItem('token');
+        delete api.defaults.headers.common['Authorization'];
+      }
+      throw error;
+    }
+  };
 
   /**
    * Obtiene el token almacenado
    * @returns {string|null}
    */
-  getToken: () => {
+  export const getToken = () => {
     return localStorage.getItem('token');
-  },
+  };
 
-
-  updateToken: (newToken) => {
+  /**
+   * Actualiza el token almacenado
+   * @param {string} newToken
+   */
+  export const updateToken = (newToken) => {
     localStorage.setItem('token', newToken);
     api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-  }
+  };
+
+export const authService = {
+
+
+
+
 };
+
+

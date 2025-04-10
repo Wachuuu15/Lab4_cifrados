@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { uploadFile } from '@services/fileService';
+import { fileService } from '@services/fileService';
+
+
 
 const FileUpload = ({ hasKeys }) => {
   const [file, setFile] = useState(null);
@@ -24,7 +26,7 @@ const FileUpload = ({ hasKeys }) => {
       formData.append('fileName', fileName);
       formData.append('shouldSign', shouldSign);
 
-      await uploadFile(formData);
+      await fileService.uploadFile(formData);
       setMessage({ text: 'Archivo subido exitosamente', type: 'success' });
     } catch (error) {
       setMessage({ text: 'Error al subir el archivo', type: 'error' });

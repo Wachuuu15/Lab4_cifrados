@@ -1,17 +1,38 @@
 // src/services/fileService.js
 import api, { downloadFile, uploadFile as uploadFileFromApi } from './api';
 
-
 export const fileService = {
   getFiles: async () => {
     return api.get('/archivos');
   },
 
+  download: async (fileId, verify = false, onDownloadProgress) => {
+    const response = await api.get(`/archivos/${fileId}/descargar?verify=${verify}`, {
+      responseType: 'blob',
+      onDownloadProgress
+    });
     
-  download: async (fileId, verify = false) => {
-    return downloadFile(`/archivos/${fileId}/descargar?verify=${verify}`, `file_${fileId}`);
+    const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+    
+    const contentDisposition = response.headers['content-disposition'];
+    const fileName = contentDisposition
+      ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+      : `file_${fileId}`;
+    
+    // Crear enlace y disparar la descarga
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    
+    // Limpieza
+    link.remove();
+    window.URL.revokeObjectURL(blobUrl);
+    
+    return fileName;
   },
-    
+
   upload: async (fileData, shouldSign = false) => {
     const formData = new FormData();
     formData.append('file', fileData.file);
@@ -23,11 +44,11 @@ export const fileService = {
       console.log(`Upload progress: ${percentCompleted}%`);
     });
   },
-    
+
   verify: async (fileId) => {
     return api.post('/archivos/verificar', { fileId });
   },
-    
+
   generateKeys: async (keyType) => {
     const response = await api.post('/keys/generate', { keyType });
 
@@ -38,9 +59,8 @@ export const fileService = {
     link.href = privateKeyUrl;
     link.download = `private_key_${keyType}.pem`;
     link.click();
-
+    
     return response;
   }
 };
 
-export { uploadFileFromApi as uploadFile };

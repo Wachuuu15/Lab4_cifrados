@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { generateKeys } from '@services/fileService';
+import { fileService } from '@services/fileService';
+
 
 
 const KeyGenerator = ({ setHasKeys }) => {
@@ -10,7 +11,7 @@ const KeyGenerator = ({ setHasKeys }) => {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      const keys = await generateKeys(keyType);
+      const keys = await fileService.generateKeys(keyType);
       
       // descarga la clave privada
       const privateKeyBlob = new Blob([keys.privateKey], { type: 'text/plain' });

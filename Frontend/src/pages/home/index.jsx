@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@hooks/useAuth';
 import { FileList, FileUpload, Key, Navbar} from '@components';
+import useAuth from '@hooks/useAuth';
+
 
 const HomePage = () => {
   const { user, logout } = useAuth();

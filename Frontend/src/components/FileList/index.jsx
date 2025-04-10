@@ -15,7 +15,7 @@ const FileList = () => {
         } catch (err) {
           setError(err.message);
         } finally {
-          setLoading(false);
+          setLoading();
         }
       };
   
