@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
     
     const existingUser = await User.findOne({ where: { correo } });
     if (existingUser) {
-      return res.status(400).json({ error: 'El email ya está registrado' });
+      return res.status(409).json({ error: 'El email ya está registrado' });
     }
     
     // Hashear la contraseña

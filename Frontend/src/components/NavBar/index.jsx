@@ -12,7 +12,7 @@ const NavBar = () => {
       <ul className={styles.navLinks}>
         <li>
           <NavLink 
-            to="/" 
+            to="/AsyStorage/files" 
             className={({ isActive }) => 
               classNames(styles.navLink, { [styles.active]: isActive })
             }

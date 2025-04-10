@@ -13,6 +13,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
       await register(email, password);
       setSuccess(true);
@@ -20,7 +21,7 @@ const RegisterForm = ({ onSwitchToLogin }) => {
         navigate('/AsyStorage/login');
       }, 2000);
     } catch (err) {
-      setError('Error en el registro. Intenta nuevamente.');
+      setError(err.message);
     }
   };
 

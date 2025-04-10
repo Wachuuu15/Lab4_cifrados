@@ -28,8 +28,8 @@ api.interceptors.response.use((response) => {
 }, (error) => {
   // Manejo centralizado de errores
   if (error.response) {
-    const message = error.response.data?.message || 'Error en la solicitud';
-    return Promise.reject(new Error(message));
+    const message = error.response.data?.error || 'Error en la solicitud';
+    return Promise.reject(message);
   } else if (error.request) {
     return Promise.reject(new Error('No se recibió respuesta del servidor'));
   } else {

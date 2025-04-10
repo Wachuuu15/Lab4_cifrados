@@ -51,10 +51,8 @@ import api from './api';
         });
         return response;
       } catch (error) {
-        if (error.response && error.response.status === 409) {
-          throw new Error('El email ya está registrado');
-        }
-        throw error;
+        const msg = error || 'Error al registrar';
+        throw new Error(msg);  
       }
     };
     
