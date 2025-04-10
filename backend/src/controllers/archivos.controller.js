@@ -108,8 +108,46 @@ exports.descargarArchivo = async (req, res) => {
 };
 
 exports.verificarArchivo = async (req, res) => {
-  // Implementación para verificar la firma del archivo
+  try {
+    const { firma, clavePublica } = req.body;
+    const archivo = req.file;
+
+    if (!archivo) {
+      return res.status(400).json({ error: "No se proporcionó un archivo para verificar" });
+    }
+
+    if (!firma || !clavePublica) {
+      return res.status(400).json({ error: "Se requiere la firma y la clave pública" });
+    }
+
+    // Leer el contenido del archivo
+    const contenido = fs.readFileSync(archivo.path);
+
+    // Generar el hash SHA-256 del archivo
+    const hash = crypto.createHash("sha256").update(contenido).digest("hex");
+
+    // Verificar la firma con la clave pública
+    const verifier = crypto.createVerify("SHA256");
+    verifier.update(hash);
+    verifier.end();
+
+    const esValida = verifier.verify(clavePublica, firma, "hex");
+
+    // Eliminar archivo temporal
+    fs.unlinkSync(archivo.path);
+
+    if (esValida) {
+      res.json({ mensaje: "Firma verificada exitosamente", valido: true });
+    } else {
+      res.status(400).json({ mensaje: "Firma inválida", valido: false });
+    }
+
+  } catch (error) {
+    console.error("Error al verificar el archivo:", error);
+    res.status(500).json({ error: "Error interno al verificar la firma" });
+  }
 };
+
 
 exports.listarArchivos = async (req, res) => {
   try {
