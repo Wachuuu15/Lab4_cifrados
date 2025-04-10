@@ -5,26 +5,106 @@ const Archivo = require("../models/archivo.model");
 
 exports.guardarArchivo = async (req, res) => {
   try {
-    const { firma, clavePrivada } = req.body;
+    const { clavePrivada, firmar } = req.body; // `firmar` indica si se debe firmar el archivo
     const archivo = req.file;
+    const usuarioCorreo = req.user.correo; // Correo del usuario autenticado
 
-    // Generar hash SHA-256 del archivo
-    const hash = crypto.createHash("sha256").update(fs.readFileSync(archivo.path)).digest("hex");
+    if (!archivo) {
+      return res.status(400).json({ error: "No se proporcionó un archivo" });
+    }
 
-    // Firmar el hash con la clave privada
-    const signer = crypto.createSign("SHA256");
-    signer.update(hash);
-    signer.end();
-    const signature = signer.sign(clavePrivada, "hex");
+    // Leer el contenido del archivo
+    const archivoContenido = fs.readFileSync(archivo.path);
 
-    res.json({ message: "Archivo guardado y firmado", hash, signature });
+    // Cifrar el archivo con RSA usando la clave privada
+    const bufferArchivo = Buffer.from(archivoContenido);
+    const archivoCifrado = crypto.privateEncrypt(
+      { key: clavePrivada, padding: crypto.constants.RSA_PKCS1_PADDING },
+      bufferArchivo
+    );
+
+    let hash = null;
+    let signature = null;
+
+    if (firmar) {
+      // Generar hash SHA-256 del archivo
+      hash = crypto.createHash("sha256").update(archivoContenido).digest("hex");
+
+      // Firmar el hash con la clave privada
+      const signer = crypto.createSign("SHA256");
+      signer.update(hash);
+      signer.end();
+      signature = signer.sign(clavePrivada, "hex");
+    }
+
+    // Crear un nombre único para el archivo cifrado
+    const archivoCifradoNombre = `${Date.now()}_${archivo.originalname}.enc`;
+    const archivoCifradoPath = path.join(__dirname, "../../../archivos_cifrados", archivoCifradoNombre);
+
+    // Guardar el archivo cifrado en el sistema de archivos
+    fs.writeFileSync(archivoCifradoPath, archivoCifrado);
+
+    // Guardar los metadatos del archivo en la base de datos
+    const nuevoArchivo = await Archivo.create({
+      correo: usuarioCorreo,
+      nombre: archivo.originalname,
+      contenido: archivoCifradoNombre, // Nombre del archivo cifrado
+      hash: hash || null,
+      tipofirma: firmar === "true" ? "RSA" : "N/A", // Indicar si fue firmado
+    });
+
+    // Eliminar el archivo original para ahorrar espacio
+    fs.unlinkSync(archivo.path);
+
+    // Responder con los datos del archivo
+    res.json({
+      message: "Archivo guardado exitosamente",
+      archivoId: nuevoArchivo.id,
+      hash,
+      signature,
+      archivoCifradoPath,
+    });
   } catch (error) {
+    console.error("Error al guardar el archivo:", error);
     res.status(500).json({ error: "Error al guardar el archivo" });
   }
 };
 
 exports.descargarArchivo = async (req, res) => {
-  // Implementación para descargar archivos
+  try {
+    const { id } = req.params;
+
+    // Buscar el archivo en la base de datos
+    const archivo = await Archivo.findOne({ where: { id } });
+    if (!archivo) {
+      return res.status(404).json({ error: "Archivo no encontrado" });
+    }
+
+    // Buscar la llave pública del usuario que subió el archivo
+    const usuario = await User.findOne({ where: { correo: archivo.correo } });
+    if (!usuario || !usuario.llavepublica) {
+      return res.status(404).json({ error: "Llave pública del usuario no encontrada" });
+    }
+
+    // Ruta del archivo cifrado
+    const archivoCifradoPath = path.join(__dirname, "../archivos_cifrados", archivo.contenido);
+
+    // Verificar si el archivo existe en el sistema de archivos
+    if (!fs.existsSync(archivoCifradoPath)) {
+      return res.status(404).json({ error: "Archivo cifrado no encontrado en el servidor" });
+    }
+
+    // Enviar el archivo cifrado y la llave pública
+    res.download(archivoCifradoPath, archivo.nombre, (err) => {
+      if (err) {
+        console.error("Error al enviar el archivo:", err);
+        res.status(500).json({ error: "Error al descargar el archivo" });
+      }
+    });
+  } catch (error) {
+    console.error("Error al descargar el archivo:", error);
+    res.status(500).json({ error: "Error al descargar el archivo" });
+  }
 };
 
 exports.verificarArchivo = async (req, res) => {

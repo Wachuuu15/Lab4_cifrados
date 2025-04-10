@@ -79,7 +79,7 @@ exports.generateKeys = async (req, res) => {
       return res.status(400).json({ message: "Algoritmo no soportado. Use 'RSA' o 'ECC'." });
     }
 
-    await savePublicKeyToDatabase(userEmail, publicKey); // Guarda llave en BD
+    await savePublicKeyToDatabase(userEmail, publicKey, algorithm); // Guarda llave en BD
 
     // Retornar la llave privada para descarga (saber si sí funciona)
     res.setHeader("Content-Disposition", "attachment; filename=private_key.pem");
@@ -91,12 +91,13 @@ exports.generateKeys = async (req, res) => {
   }
 };
 
-const savePublicKeyToDatabase = async (userEmail, publicKey) => {
+const savePublicKeyToDatabase = async (userEmail, publicKey, algorithm) => {
   const user = await User.findOne({ where: { correo: userEmail } });
   if (!user) {
     throw new Error("Usuario no encontrado.");
   }
 
   user.llavepublica = publicKey;
+  user.tipofirma = algorithm;
   await user.save();
 };

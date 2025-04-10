@@ -1,7 +1,8 @@
 CREATE TABLE usuarios (
     correo VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
     contrasena TEXT NOT NULL,
-    llavePublica TEXT
+    llavePublica TEXT,
+    tipoFirma VARCHAR(10)
 );
 
 CREATE TABLE archivos (

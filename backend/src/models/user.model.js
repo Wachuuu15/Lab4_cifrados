@@ -16,6 +16,10 @@ const User = sequelize.define('User', {
     type: DataTypes.TEXT, // Tipo TEXT para la llave pública
     allowNull: true, // Puede ser null si no se proporciona
   },
+  tipofirma: {
+    type: DataTypes.STRING(10),
+    allowNull: true,
+  }
 }, {
   tableName: 'usuarios', // Especificamos el nombre de la tabla existente
   timestamps: false, // No se usará createdAt o updatedAt

@@ -3,7 +3,7 @@ const { guardarArchivo, descargarArchivo, verificarArchivo, listarArchivos } = r
 const authenticate = require("../middlewares/auth.middleware");
 const router = express.Router();
 
-router.get("/", listarArchivos);
+router.get("/", authenticate, listarArchivos);
 router.post("/guardar", authenticate, guardarArchivo);
 router.get("/:id/descargar", authenticate, descargarArchivo);
 router.post("/verificar", verificarArchivo);
