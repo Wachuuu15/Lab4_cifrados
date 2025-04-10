@@ -3,16 +3,20 @@ import { fileService } from '@services/fileService';
 import classNames from 'classnames';
 import styles from './FileUpload.module.scss';
 
-const FileUpload = ({ hasKeys }) => {
+const FileUpload = ({ hasKeys, onUploadSuccess }) => {  // Añadí onUploadSuccess
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [shouldSign, setShouldSign] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [uploadProgress, setUploadProgress] = useState(0);
   
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-    setFileName(e.target.files[0].name);
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      setFileName(selectedFile.name);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -20,24 +24,45 @@ const FileUpload = ({ hasKeys }) => {
     if (!file) return;
 
     setIsLoading(true);
+    setUploadProgress(0);
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('fileName', fileName);
       formData.append('shouldSign', shouldSign);
 
-      await fileService.uploadFile(formData);
+      const progressCallback = (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / (progressEvent.total || 1)
+        );
+        setUploadProgress(percentCompleted);
+      };
+
+      // Cambiado de uploadFile a upload
+      await fileService.upload(formData, progressCallback);
+      
       setMessage({ text: 'Archivo subido exitosamente', type: 'success' });
-      // Reset form after successful upload
+      
+      // Reset form
       setFile(null);
       setFileName('');
       setShouldSign(false);
       e.target.reset();
+      
+      // Notificar éxito al componente padre
+      if (onUploadSuccess) onUploadSuccess();
+      
     } catch (error) {
-      setMessage({ text: error.message || 'Error al subir el archivo', type: 'error' });
+      setMessage({ 
+        text: error.message || 'Error al subir el archivo', 
+        type: 'error' 
+      });
     } finally {
       setIsLoading(false);
-      setTimeout(() => setMessage({ text: '', type: '' }), 3000);
+      setTimeout(() => {
+        setMessage({ text: '', type: '' });
+        setUploadProgress(0);
+      }, 3000);
     }
   };
 
@@ -55,6 +80,7 @@ const FileUpload = ({ hasKeys }) => {
               onChange={handleFileChange} 
               className={styles.fileInput}
               required 
+              disabled={isLoading}
             />
           </label>
         </div>
@@ -65,7 +91,7 @@ const FileUpload = ({ hasKeys }) => {
               type="checkbox"
               checked={shouldSign}
               onChange={() => setShouldSign(!shouldSign)}
-              disabled={!hasKeys}
+              disabled={!hasKeys || isLoading}
               className={styles.checkboxInput}
             />
             <span className={classNames(styles.checkboxCustom, {
@@ -88,12 +114,21 @@ const FileUpload = ({ hasKeys }) => {
           {isLoading ? (
             <>
               <span className={styles.spinner}></span>
-              Subiendo...
+              {uploadProgress > 0 ? `${uploadProgress}%` : 'Subiendo...'}
             </>
           ) : (
             'Subir Archivo'
           )}
         </button>
+
+        {isLoading && uploadProgress > 0 && (
+          <div className={styles.progressBar}>
+            <div 
+              className={styles.progressFill}
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        )}
       </form>
       
       {message.text && (
