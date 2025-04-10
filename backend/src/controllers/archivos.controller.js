@@ -141,24 +141,26 @@ exports.descargarArchivo = async (req, res) => {
 
 exports.verificarArchivo = async (req, res) => {
   try {
-    const { firma, correo } = req.body;
+    const { correo } = req.body;
     const archivo = req.file;
 
     if (!archivo) {
       return res.status(400).json({ error: "No se proporcionó un archivo para verificar" });
     }
 
-    if (!firma || !correo) {
+    if (!correo) {
       return res.status(400).json({ error: "Se requiere la firma y el correo del firmante" });
     }
 
     // Buscar al usuario por su correo
     const usuario = await User.findOne({ where: { correo } });
+    const archivoEnBase = await Archivo.findOne({ where: { correo: correo , nombre: archivo.originalname } });
     if (!usuario || !usuario.llavepublica) {
       return res.status(404).json({ error: "Usuario no encontrado o sin llave pública" });
     }
 
     const clavePublica = usuario.llavepublica;
+    const firma = archivoEnBase.firma;
 
     // Leer contenido del archivo
     const contenido = fs.readFileSync(archivo.path);
@@ -170,8 +172,11 @@ exports.verificarArchivo = async (req, res) => {
     const verifier = crypto.createVerify("SHA256");
     verifier.update(hash);
     verifier.end();
-
-    const esValida = verifier.verify(clavePublica, firma, "hex");
+    console.log('Hash Generado:', hash);
+    console.log('Firma almacenada:', firma);
+    const clavePublicaClean = clavePublica.replace(/\n/g, '\n');
+    
+    const esValida = verifier.verify(clavePublicaClean, firma, "hex");
 
     fs.unlinkSync(archivo.path); // Eliminar archivo temporal
 

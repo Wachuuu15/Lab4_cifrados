@@ -7,6 +7,6 @@ const router = express.Router();
 router.get("/", authenticate, listarArchivos);
 router.post("/guardar", authenticate, upload.single("file"), guardarArchivo);
 router.get("/:id/descargar", authenticate, descargarArchivo);
-router.post("/verificar", verificarArchivo);
+router.post("/verificar", authenticate, upload.single("file"), verificarArchivo);
 
 module.exports = router;
