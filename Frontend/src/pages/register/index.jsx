@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { register } from '@services/authService';
+import styles from "./register.module.scss";
+
 
 const RegisterForm = ({ onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
@@ -23,40 +25,51 @@ const RegisterForm = ({ onSwitchToLogin }) => {
   };
 
   return (
-    <div className="auth-form">
-      <h2>Registro</h2>
-      {error && <p className="error">{error}</p>}
-      {success ? (
-        <p className="success">¡Registro exitoso! Redirigiendo a login...</p>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label>Email:</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+    <div className={styles.authContainer}>
+      <div className={styles.authCard}>
+        <h2 className={styles.authTitle}>Registro</h2>
+        
+        {error && <p className={styles.errorMessage}>{error}</p>}
+        
+        {success ? (
+          <div className={styles.successMessage}>
+            ¡Registro exitoso! Redirigiendo a login...
           </div>
-          <div>
-            <label>Contraseña:</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button type="submit">Registrarse</button>
-        </form>
-      )}
-      <p>
-        ¿Ya tienes cuenta?{' '}
-        <button onClick={onSwitchToLogin} className="link-button">
-          Inicia sesión aquí
-        </button>
-      </p>
+        ) : (
+          <form onSubmit={handleSubmit} className={styles.authForm}>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Email:</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={styles.formInput}
+                required
+              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Contraseña:</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.formInput}
+                required
+              />
+            </div>
+            <button type="submit" className={styles.submitButton}>
+              Registrarse
+            </button>
+          </form>
+        )}
+        
+        <div className={styles.switchText}>
+          ¿Ya tienes cuenta?{' '}
+          <button onClick={onSwitchToLogin} className={styles.linkButton}>
+            Inicia sesión aquí
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
