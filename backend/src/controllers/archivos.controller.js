@@ -1,62 +1,77 @@
 const crypto = require("crypto");
+const User = require("../models/user.model");
 const fs = require("fs");
 const path = require("path");
 const Archivo = require("../models/archivo.model");
 
 exports.guardarArchivo = async (req, res) => {
   try {
-    const { clavePrivada, firmar } = req.body; // `firmar` indica si se debe firmar el archivo
+    const { clavePrivada, firmar } = req.body;
     const archivo = req.file;
-    const usuarioCorreo = req.user.correo; // Correo del usuario autenticado
 
     if (!archivo) {
       return res.status(400).json({ error: "No se proporcionó un archivo" });
     }
 
-    // Leer el contenido del archivo
-    const archivoContenido = fs.readFileSync(archivo.path);
-
-    // Cifrar el archivo con RSA usando la clave privada
-    const bufferArchivo = Buffer.from(archivoContenido);
-    const archivoCifrado = crypto.privateEncrypt(
-      { key: clavePrivada, padding: crypto.constants.RSA_PKCS1_PADDING },
-      bufferArchivo
-    );
-
-    let hash = null;
-    let signature = null;
-
-    if (firmar) {
-      // Generar hash SHA-256 del archivo
-      hash = crypto.createHash("sha256").update(archivoContenido).digest("hex");
-
-      // Firmar el hash con la clave privada
-      const signer = crypto.createSign("SHA256");
-      signer.update(hash);
-      signer.end();
-      signature = signer.sign(clavePrivada, "hex");
+    if (!clavePrivada) {
+      return res.status(400).json({ error: "No se proporcionó la clave privada" });
     }
 
-    // Crear un nombre único para el archivo cifrado
-    const archivoCifradoNombre = `${Date.now()}_${archivo.originalname}.enc`;
-    const archivoCifradoPath = path.join(__dirname, "../../../archivos_cifrados", archivoCifradoNombre);
+    const clavePrivadaClean = clavePrivada.replace(/\\n/g, '\n');
 
-    // Guardar el archivo cifrado en el sistema de archivos
-    fs.writeFileSync(archivoCifradoPath, archivoCifrado);
+    // Buscar al usuario para obtener el tipo de firma
+    const usuario = await User.findOne({ where: { correo: req.user.correo } });
+    if (!usuario) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
 
-    // Guardar los metadatos del archivo en la base de datos
+    const tipoFirma = usuario.tipofirma;
+    const archivoContenido = fs.readFileSync(archivo.path, "utf-8");
+    const bufferArchivo = Buffer.from(archivoContenido);
+
+    const hash = crypto.createHash("sha256").update(archivoContenido).digest("hex");
+    let signature = null;
+    let archivoCifrado = null;
+
+    if (firmar === "true") {
+      const signer = crypto.createSign("SHA256");
+
+      if (tipoFirma === "RSA") { // Firmar el hash con RSA
+        signer.update(hash);
+        signer.end();
+        signature = signer.sign(clavePrivadaClean, "hex");
+      } else if (tipoFirma === "ECC") { // Firmar el hash con ECC
+        signer.update(hash);
+        signer.end();
+        signature = signer.sign(clavePrivadaClean, "hex");
+      }
+      
+    } else { // Cifrar el archivo con RSA usando la clave privada. (SOLO SI el usuario creo sus llaves con RSA)
+      if (tipoFirma === "RSA") {
+        archivoCifrado = crypto.publicEncrypt(
+          { key: usuario.llavepublica, padding: crypto.constants.RSA_PKCS1_PADDING },
+          bufferArchivo
+        );
+      }
+    }
+
+    const archivoCifradoNombre = `${Date.now()}_${archivo.originalname}`;
+    const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivoCifradoNombre);
+
+    fs.writeFileSync(archivoCifradoPath, archivoCifrado ? archivoCifrado : hash);
+
+    // Guardar en BD
     const nuevoArchivo = await Archivo.create({
-      correo: usuarioCorreo,
-      nombre: archivo.originalname,
-      contenido: archivoCifradoNombre, // Nombre del archivo cifrado
-      hash: hash || null,
-      tipofirma: firmar === "true" ? "RSA" : "N/A", // Indicar si fue firmado
+      correo: req.user.correo,
+      nombre: archivo.originalname, // seguramente tendre que cambiarlo a archivoCifradoNombre
+      contenido: archivoCifrado ? archivoCifrado : null,
+      hash,
+      firma: signature ? signature : null,
+      tipofirma: firmar === "true" ? tipoFirma : "RSA",
     });
 
-    // Eliminar el archivo original para ahorrar espacio
     fs.unlinkSync(archivo.path);
 
-    // Responder con los datos del archivo
     res.json({
       message: "Archivo guardado exitosamente",
       archivoId: nuevoArchivo.id,
@@ -80,21 +95,15 @@ exports.descargarArchivo = async (req, res) => {
       return res.status(404).json({ error: "Archivo no encontrado" });
     }
 
-    // Buscar la llave pública del usuario que subió el archivo
-    const usuario = await User.findOne({ where: { correo: archivo.correo } });
-    if (!usuario || !usuario.llavepublica) {
-      return res.status(404).json({ error: "Llave pública del usuario no encontrada" });
-    }
-
     // Ruta del archivo cifrado
-    const archivoCifradoPath = path.join(__dirname, "../archivos_cifrados", archivo.contenido);
+    const archivoCifradoPath = path.join(__dirname, "../../uploads", archivo.contenido);
 
     // Verificar si el archivo existe en el sistema de archivos
     if (!fs.existsSync(archivoCifradoPath)) {
       return res.status(404).json({ error: "Archivo cifrado no encontrado en el servidor" });
     }
 
-    // Enviar el archivo cifrado y la llave pública
+    // Enviar el archivo cifrado
     res.download(archivoCifradoPath, archivo.nombre, (err) => {
       if (err) {
         console.error("Error al enviar el archivo:", err);
