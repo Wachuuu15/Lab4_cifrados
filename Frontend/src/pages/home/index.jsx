@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileList, FileUpload, FileVerifier, Keys, Navbar} from '@components';
+import api from '@services/api';
 import useAuth from '@hooks/useAuth';
 import styles from "./home.module.scss";
 

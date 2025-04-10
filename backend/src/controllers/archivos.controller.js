@@ -3,7 +3,6 @@ const User = require("../models/user.model");
 const fs = require("fs");
 const path = require("path");
 const Archivo = require("../models/archivo.model");
-const User = require("../models/user.model");
 
 exports.guardarArchivo = async (req, res) => {
   try {
@@ -131,7 +130,7 @@ exports.descargarArchivo = async (req, res) => {
     res.setHeader('Content-Type', 'application/octet-stream');
 
     // Stream el archivo
-    const fileStream = fs.createReadStream(archivoPath);
+    const fileStream = fs.createReadStream(archivoCifradoPath);
     fileStream.pipe(res);
     
     } catch (error) {
