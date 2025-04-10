@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileList, FileUpload, Keys, Navbar} from '@components';
-import api from '@services/api';
+import { FileList, FileUpload, FileVerifier, Keys, Navbar} from '@components';
 import useAuth from '@hooks/useAuth';
 import styles from "./home.module.scss";
 
@@ -54,6 +53,7 @@ const HomePage = () => {
           <div className={styles.filesSection}>
             <FileUpload hasKeys={hasKeys} />
             <FileList files={files} />
+            <FileVerifier hasKeys={hasKeys} />
           </div>
         ) : (
           <div className={styles.keysSection}>

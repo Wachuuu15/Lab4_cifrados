@@ -3,6 +3,7 @@ const User = require("../models/user.model");
 const fs = require("fs");
 const path = require("path");
 const Archivo = require("../models/archivo.model");
+const User = require("../models/user.model");
 
 exports.guardarArchivo = async (req, res) => {
   try {
@@ -100,6 +101,8 @@ exports.guardarArchivo = async (req, res) => {
 exports.descargarArchivo = async (req, res) => {
   try {
     const { id } = req.params;
+    const { verify } = req.query;
+
 
     // Buscar el archivo en la base de datos
     const archivo = await Archivo.findOne({ where: { id } });
@@ -107,6 +110,14 @@ exports.descargarArchivo = async (req, res) => {
       return res.status(404).json({ error: "Archivo no encontrado" });
     }
 
+    // Verificación de firma si se solicita
+    if (verify === 'true') {
+      const esValido = await verificarFirmaDigital(archivo);
+        if (!esValido) {
+          return res.status(403).json({ error: "Firma digital no válida" });
+        }
+    }
+    
     // Ruta del archivo cifrado
     const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivo.nombre);
 
@@ -115,57 +126,61 @@ exports.descargarArchivo = async (req, res) => {
       return res.status(404).json({ error: "Archivo cifrado no encontrado en el servidor" });
     }
 
-    // Configurar el encabezado Content-Disposition
-    res.setHeader("Content-Disposition", `attachment; filename="${archivo.nombre}"`);
+    // Configurar headers
+    res.setHeader('Content-Disposition', `attachment; filename="${archivo.nombre}"`);
+    res.setHeader('Content-Type', 'application/octet-stream');
 
-    // Enviar el archivo cifrado
-    res.download(archivoCifradoPath, archivo.nombre, (err) => {
-      if (err) {
-        console.error("Error al enviar el archivo:", err);
-        res.status(500).json({ error: "Error al descargar el archivo" });
-      }
-    });
-  } catch (error) {
-    console.error("Error al descargar el archivo:", error);
-    res.status(500).json({ error: "Error al descargar el archivo" });
-  }
+    // Stream el archivo
+    const fileStream = fs.createReadStream(archivoPath);
+    fileStream.pipe(res);
+    
+    } catch (error) {
+      console.error("Error al descargar el archivo:", error);
+      res.status(500).json({ error: "Error al descargar el archivo" });
+    }
 };
 
 exports.verificarArchivo = async (req, res) => {
   try {
-    const { firma, clavePublica } = req.body;
+    const { firma, correo } = req.body;
     const archivo = req.file;
 
     if (!archivo) {
       return res.status(400).json({ error: "No se proporcionó un archivo para verificar" });
     }
 
-    if (!firma || !clavePublica) {
-      return res.status(400).json({ error: "Se requiere la firma y la clave pública" });
+    if (!firma || !correo) {
+      return res.status(400).json({ error: "Se requiere la firma y el correo del firmante" });
     }
 
-    // Leer el contenido del archivo
+    // Buscar al usuario por su correo
+    const usuario = await User.findOne({ where: { correo } });
+    if (!usuario || !usuario.llavepublica) {
+      return res.status(404).json({ error: "Usuario no encontrado o sin llave pública" });
+    }
+
+    const clavePublica = usuario.llavepublica;
+
+    // Leer contenido del archivo
     const contenido = fs.readFileSync(archivo.path);
 
-    // Generar el hash SHA-256 del archivo
+    // Generar hash SHA-256
     const hash = crypto.createHash("sha256").update(contenido).digest("hex");
 
-    // Verificar la firma con la clave pública
+    // Verificar firma
     const verifier = crypto.createVerify("SHA256");
     verifier.update(hash);
     verifier.end();
 
     const esValida = verifier.verify(clavePublica, firma, "hex");
 
-    // Eliminar archivo temporal
-    fs.unlinkSync(archivo.path);
+    fs.unlinkSync(archivo.path); // Eliminar archivo temporal
 
     if (esValida) {
       res.json({ mensaje: "Firma verificada exitosamente", valido: true });
     } else {
       res.status(400).json({ mensaje: "Firma inválida", valido: false });
     }
-
   } catch (error) {
     console.error("Error al verificar el archivo:", error);
     res.status(500).json({ error: "Error interno al verificar la firma" });
