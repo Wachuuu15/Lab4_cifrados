@@ -61,14 +61,26 @@ exports.guardarArchivo = async (req, res) => {
     fs.writeFileSync(archivoCifradoPath, archivoCifrado ? archivoCifrado : hash);
 
     // Guardar en BD
-    const nuevoArchivo = await Archivo.create({
-      correo: req.user.correo,
-      nombre: archivo.originalname, // seguramente tendre que cambiarlo a archivoCifradoNombre
-      contenido: archivoCifrado ? archivoCifrado : null,
-      hash,
-      firma: signature ? signature : null,
-      tipofirma: firmar === "true" ? tipoFirma : (firmar === "false" && tipoFirma === "RSA" ? "RSA" : tipoFirma),
-    });
+    let nuevoArchivo = await Archivo.findOne({ where: { nombre: archivo.originalname } });
+    if (nuevoArchivo) {
+      nuevoArchivo.correo = req.user.correo;
+      nuevoArchivo.nombre = archivo.originalname;
+      nuevoArchivo.contenido = archivoCifrado ? archivoCifrado : null;
+      nuevoArchivo.hash = hash;
+      nuevoArchivo.firma = signature ? signature : null;
+      nuevoArchivo.tipofirma = firmar === "true" ? tipoFirma : (firmar === "false" && tipoFirma === "RSA" ? "RSA" : tipoFirma);
+      await nuevoArchivo.save();
+    }
+    else {
+      nuevoArchivo = await Archivo.create({
+        correo: req.user.correo,
+        nombre: archivo.originalname, // seguramente tendre que cambiarlo a archivoCifradoNombre
+        contenido: archivoCifrado ? archivoCifrado : null,
+        hash,
+        firma: signature ? signature : null,
+        tipofirma: firmar === "true" ? tipoFirma : (firmar === "false" && tipoFirma === "RSA" ? "RSA" : tipoFirma),
+      });
+    }
 
     fs.unlinkSync(archivo.path);
 
@@ -161,7 +173,7 @@ exports.verificarArchivo = async (req, res) => {
 exports.listarArchivos = async (req, res) => {
   try {
     const archivos = await Archivo.findAll({
-      attributes: ["id", "correo", "nombre", "contenido", "hash", "tipofirma"]
+      attributes: ["id", "correo", "nombre", "contenido", "hash", "firma", "tipofirma"]
     });
 
     res.json(archivos);

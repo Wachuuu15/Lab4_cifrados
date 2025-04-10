@@ -122,3 +122,24 @@ const savePublicKeyToDatabase = async (userEmail, publicKey, algorithm) => {
   user.tipofirma = algorithm;
   await user.save();
 };
+
+
+exports.getPublicKey = async (req, res) => {
+  try {
+    const { correo } = req.params;
+    console.log(`Buscando llave pública para el usuario: ${correo}`);
+
+    // Buscar al usuario por correo
+    const user = await User.findOne({ where: { correo } });
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    // Retornar la llave pública o null si no existe
+    res.json({ llavepublica: user.llavepublica || null });
+  } catch (error) {
+    console.error("Error al obtener la llave pública:", error);
+    res.status(500).json({ error: "Error al obtener la llave pública" });
+  }
+};
