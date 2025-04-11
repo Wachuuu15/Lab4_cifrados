@@ -167,7 +167,7 @@ exports.verificarArchivo = async (req, res) => {
     if (esValida) {
       res.json({ mensaje: "Firma verificada exitosamente", valido: true });
     } else {
-      res.status(400).json({ mensaje: "Firma inválida", valido: false });
+      res.json({ mensaje: "Firma inválida", valido: false });
     }
   } catch (error) {
     console.error("Error al verificar el archivo:", error);

@@ -33,6 +33,7 @@ api.interceptors.response.use((response) => {
   };
 }, (error) => {
   // Manejo centralizado de errores
+  console.log('Error en la respuesta:', error);
   if (error.response) {
     const message = error.response.data?.error || 'Error en la solicitud';
     return Promise.reject(message);

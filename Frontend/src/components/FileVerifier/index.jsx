@@ -26,9 +26,14 @@ const FileVerifier = () => {
       formData.append('file', file);
       formData.append('correo', correoFirmante);
 
-      const res = await fileService.verifyFile(formData); // Nuevo método del servicio
-      setMessage({ text: res.mensaje, type: 'success' });
+      const res = await fileService.verify(formData); // Nuevo método del servicio
+      if (res.data.valido) {
+        setMessage({ text: '✅ ' + res.data.mensaje, type: 'success' });
+      } else {
+        setMessage({ text: '❌ ' + res.data.mensaje, type: 'error' });
+      }
     } catch (error) {
+      console.log(error);
       setMessage({
         text: error.response?.data?.mensaje || 'Error al verificar el archivo',
         type: 'error',

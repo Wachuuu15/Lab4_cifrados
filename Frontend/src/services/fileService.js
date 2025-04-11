@@ -57,9 +57,14 @@ export const fileService = {
     });
   },
 
-  verify: async (fileId) => {
-    return api.post('/archivos/verificar', { fileId });
+  verify: async (formData) => {
+    return api.post('/archivos/verificar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
   },
+  
 
   generateKeys: async (keyType) => {
     const response = await api.post('/auth/generate-keys', { algorithm: keyType });
