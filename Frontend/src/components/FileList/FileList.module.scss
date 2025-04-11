@@ -1,0 +1,216 @@
+// Variables
+$primary-dark: #012E4A;
+$primary: #036280;
+$primary-light: #378BA4;
+$secondary: #81BECE;
+$background: #E8EDE7;
+$white: #FFFFFF;
+$error: #E74C3C;
+$success: #2ECC71;
+$warning: #F39C12;
+$text-dark: #333333;
+$text-light: #666666;
+$border-radius: 8px;
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$transition: all 0.3s ease;
+
+
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: $white;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+}
+
+.title {
+  color: $primary-dark;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  border-bottom: 2px solid $secondary;
+  padding-bottom: 0.5rem;
+}
+
+.fileList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: lighten($background, 3%);
+  border-radius: $border-radius;
+  transition: $transition;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow;
+  }
+}
+
+.fileInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0; // For text truncation
+}
+
+.fileIcon, .emptyIcon {
+  width: 24px;
+  height: 24px;
+  fill: $primary-light;
+  flex-shrink: 0;
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+}
+
+.fileDetails {
+  display: flex;
+  flex-direction: column;
+  min-width: 0; // For text truncation
+}
+
+.fileName {
+  font-weight: 500;
+  color: $primary-dark;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fileMeta {
+  font-size: 0.8rem;
+  color: $text-light;
+}
+
+.downloadButton {
+  padding: 0.5rem 1rem;
+  background: $primary;
+  color: $white;
+  border: none;
+  border-radius: $border-radius;
+  font-weight: 500;
+  cursor: pointer;
+  transition: $transition;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  
+  &:hover:not(:disabled) {
+    background: darken($primary, 10%);
+    transform: translateY(-1px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: lighten($primary, 25%);
+    cursor: wait;
+  }
+}
+
+.downloadSpinner {
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 2px solid rgba($white, 0.3);
+  border-top-color: $white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  background: lighten($background, 3%);
+  border-radius: $border-radius;
+  color: $text-light;
+  text-align: center;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid $secondary;
+  border-top-color: $primary;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background: rgba($error, 0.1);
+  border-radius: $border-radius;
+}
+
+.errorMessage {
+  color: $error;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.retryButton {
+  background: $error;
+  color: $white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: $transition;
+  
+  &:hover {
+    background: darken($error, 10%);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+  
+  .fileItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .downloadButton {
+    width: 100%;
+    justify-content: center;
+  }
+}

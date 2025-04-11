@@ -1,0 +1,160 @@
+// Variables
+$primary-dark: #012E4A;
+$primary: #036280;
+$primary-light: #378BA4;
+$secondary: #81BECE;
+$background: #E8EDE7;
+$white: #FFFFFF;
+$error: #E74C3C;
+$success: #2ECC71;
+$warning: #F39C12;
+$text-dark: #333333;
+$text-light: #666666;
+$border-radius: 8px;
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$transition: all 0.3s ease;
+
+
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: $white;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+}
+
+.title {
+  color: $primary-dark;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  border-bottom: 2px solid $secondary;
+  padding-bottom: 0.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: $text-dark;
+}
+
+.select {
+  padding: 0.7rem 1rem;
+  border: 1px solid $primary-light;
+  border-radius: $border-radius;
+  background-color: $white;
+  font-size: 1rem;
+  color: $text-dark;
+  transition: $transition;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 2px rgba($primary, 0.2);
+  }
+  
+  &:disabled {
+    background-color: lighten($background, 3%);
+    cursor: not-allowed;
+  }
+}
+
+.generateButton {
+  padding: 0.8rem 1.5rem;
+  background: $primary;
+  color: $white;
+  border: none;
+  border-radius: $border-radius;
+  font-weight: bold;
+  cursor: pointer;
+  transition: $transition;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  width: 100%;
+  
+  &:hover:not(:disabled) {
+    background: darken($primary, 10%);
+    transform: translateY(-1px);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    background: lighten($primary, 20%);
+    cursor: wait;
+  }
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba($white, 0.3);
+  border-top-color: $white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.note {
+  margin-top: 1.5rem;
+  padding: 0.8rem;
+  background: lighten($background, 3%);
+  border-radius: $border-radius;
+  color: $text-light;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.message {
+  padding: 0.8rem 1rem;
+  border-radius: $border-radius;
+  margin-top: 1rem;
+  text-align: center;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
+}
+
+.success {
+  background: rgba($success, 0.2);
+  color: darken($success, 20%);
+  border: 1px solid rgba($success, 0.3);
+}
+
+.error {
+  background: rgba($error, 0.2);
+  color: darken($error, 20%);
+  border: 1px solid rgba($error, 0.3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem;
+  }
+  
+  .title {
+    font-size: 1.3rem;
+  }
+  
+  .generateButton {
+    padding: 0.7rem 1rem;
+  }
+}

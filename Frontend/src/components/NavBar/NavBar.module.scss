@@ -1,0 +1,123 @@
+// Variables
+$primary-dark: #012E4A;
+$primary: #036280;
+$primary-light: #378BA4;
+$secondary: #81BECE;
+$background: #E8EDE7;
+$white: #FFFFFF;
+$error: #E74C3C;
+$success: #2ECC71;
+$warning: #F39C12;
+$text-dark: #333333;
+$text-light: #666666;
+$border-radius: 8px;
+$box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$transition: all 0.3s ease;
+
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: $primary-dark;
+  color: $white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: $white;
+  
+  span {
+    background: linear-gradient(to right, $secondary, $primary-light);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+.navLinks {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  color: rgba($white, 0.8);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    color: $white;
+  }
+  
+  &.active {
+    color: $white;
+    font-weight: 600;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: $secondary;
+      border-radius: 2px;
+    }
+  }
+}
+
+.userSection {
+  display: flex;
+  align-items: center;
+}
+
+.userButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  border: none;
+  color: $white;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: $border-radius;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba($white, 0.1);
+  }
+}
+
+.userIcon {
+  font-size: 1.2rem;
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .navLinks {
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .userSection {
+    margin-top: 0.5rem;
+  }
+}

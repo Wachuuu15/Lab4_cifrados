@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
     
     const existingUser = await User.findOne({ where: { correo } });
     if (existingUser) {
-      return res.status(400).json({ error: 'El email ya está registrado' });
+      return res.status(409).json({ error: 'El email ya está registrado' });
     }
     
     // Hashear la contraseña
@@ -47,6 +47,27 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.verifyToken = (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ error: "No se proporcionó un token" });
+  }
+
+  const token = authHeader;
+
+  if (!token) {
+    return res.status(401).json({ error: "Token no válido" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ user: decoded });
+  } catch (error) {
+    res.status(401).json({ error: `Token inválido: ${error.message}` });
+  }
+};
+
 exports.generateKeys = async (req, res) => {
   const { algorithm } = req.body; // ECC o RSA
   if (!algorithm || (algorithm !== "RSA" && algorithm !== "ECC")) {
@@ -81,10 +102,7 @@ exports.generateKeys = async (req, res) => {
 
     await savePublicKeyToDatabase(userEmail, publicKey, algorithm); // Guarda llave en BD
 
-    // Retornar la llave privada para descarga (saber si sí funciona)
-    res.setHeader("Content-Disposition", "attachment; filename=private_key.pem");
-    res.setHeader("Content-Type", "application/x-pem-file");
-    res.status(200).send(privateKey);
+    res.status(200).json({ privateKey });
   } catch (error) {
     console.error("Error al generar las llaves:", error);
     res.status(500).json({ message: `Error al generar las llaves: ${error.message}` });
@@ -100,4 +118,24 @@ const savePublicKeyToDatabase = async (userEmail, publicKey, algorithm) => {
   user.llavepublica = publicKey;
   user.tipofirma = algorithm;
   await user.save();
+};
+
+
+exports.getPublicKey = async (req, res) => {
+  try {
+    const { correo } = req.params;
+
+    // Buscar al usuario por correo
+    const user = await User.findOne({ where: { correo } });
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    // Retornar la llave pública o null si no existe
+    res.json({ llavepublica: user.llavepublica || null });
+  } catch (error) {
+    console.error("Error al obtener la llave pública:", error);
+    res.status(500).json({ error: "Error al obtener la llave pública" });
+  }
 };

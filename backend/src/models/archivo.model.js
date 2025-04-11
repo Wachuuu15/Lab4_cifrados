@@ -17,7 +17,7 @@ const Archivo = sequelize.define("Archivo", {
     },
     contenido: {
     type: DataTypes.BLOB,
-    allowNull: true
+    allowNull: false
     },
     hash: {
     type: DataTypes.TEXT,
