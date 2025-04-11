@@ -15,9 +15,8 @@ const HomePage = () => {
     const fetchPublicKey = async () => {
       if (user) {
         try {
-          const response = await api.get(`/auth/getPublicKey/${user.userEmail}`);
-          console.log('Llave pública:', response.llavepublica);
-          setHasKeys(!!response.llavepublica);
+          const { data } = await api.get(`/auth/getPublicKey/${user.userEmail}`);
+          setHasKeys(!!data.llavepublica);
         } catch (error) {
           console.error('Error al obtener la llave pública:', error);
         }

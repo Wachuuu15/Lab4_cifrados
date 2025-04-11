@@ -15,7 +15,6 @@ api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `${token}`;
-    console.log('Encabezado Authorization:', config.headers.Authorization);
   }
   return config;
 }, (error) => {
@@ -24,7 +23,14 @@ api.interceptors.request.use((config) => {
 
 // a responses
 api.interceptors.response.use((response) => {
-  return response.data;
+  return {
+    data: response.data,
+    headers: response.headers,
+    status: response.status,
+    statusText: response.statusText,
+    config: response.config,
+    request: response.request,
+  };
 }, (error) => {
   // Manejo centralizado de errores
   if (error.response) {
@@ -39,27 +45,39 @@ api.interceptors.response.use((response) => {
 
 // Métodos 
 export const downloadFile = async (url, defaultName, onDownloadProgress) => {
-  const response = await api.get(url, {
-    responseType: 'blob',
-    onDownloadProgress,
-  });
+  try {
+    const response = await api.get(url, {
+      responseType: 'blob',
+      onDownloadProgress,
+    });
 
-  // Obtener nombre del archivo del header Content-Disposition
-  const contentDisposition = response.headers['content-disposition'];
-  let fileName = defaultName;
+    // Obtener nombre del archivo del header Content-Disposition
+    const contentDisposition = response.headers['content-disposition'];
+    let fileName = defaultName;
 
-  if (contentDisposition) {
-    const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
-    if (fileNameMatch && fileNameMatch[1]) {
-      fileName = fileNameMatch[1].replace(/"/g, '');
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+      if (fileNameMatch && fileNameMatch[1]) {
+        fileName = decodeURIComponent(fileNameMatch[1]);
+      } else {
+        const fallbackMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (fallbackMatch && fallbackMatch[1]) {
+          fileName = fallbackMatch[1].replace(/"/g, '');
+        }
+      }
+    } else {
+      console.warn('El encabezado Content-Disposition no está presente en la respuesta.');
     }
-  }
 
-  return {
-    fileName,
-    blob: new Blob([response.data]),
-    mimeType: response.headers['content-type'],
-  };
+    return {
+      fileName,
+      blob: new Blob([response.data]),
+      mimeType: response.headers['content-type'],
+    };
+  } catch (error) {
+    console.error('Error en downloadFile:', error);
+    throw new Error(error.message || 'Error al descargar el archivo');
+  }
 };
 
 export const uploadFile = async (url, formData, onUploadProgress) => {

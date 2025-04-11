@@ -17,7 +17,7 @@ export const fileService = {
   download: async (fileId, verify = false, onProgress) => {
     try {
       const { fileName, blob } = await downloadFile(
-        `/archivos/${fileId}/descargar?verify=${verify}`,
+        `/archivos/${fileId}/descargar`,
         `archivo_${fileId}`,
         onProgress
       );

@@ -11,7 +11,7 @@ const KeyGenerator = ({ setHasKeys }) => {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      const response = await fileService.generateKeys(keyType);
+      const { data: response } = await fileService.generateKeys(keyType);
   
       const privateKeyBlob = new Blob([response.privateKey], { type: 'text/plain' });
       const privateKeyUrl = URL.createObjectURL(privateKeyBlob);

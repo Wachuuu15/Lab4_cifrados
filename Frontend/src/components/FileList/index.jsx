@@ -12,7 +12,7 @@ const FileList = () => {
   useEffect(() => {
     const loadFiles = async () => {
       try {
-        const data = await fileService.getFiles();
+        const { data } = await fileService.getFiles();
         setFiles(data);
       } catch (err) {
         setError(err.message);
@@ -26,6 +26,7 @@ const FileList = () => {
 
   const handleDownload = async (fileId) => {
     try {
+      //console.log('Descargando archivo:', fileId);
       setDownloading(prev => ({ ...prev, [fileId]: true }));
       await fileService.download(fileId);
     } catch (err) {

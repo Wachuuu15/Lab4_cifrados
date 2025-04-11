@@ -10,7 +10,7 @@ import api from './api';
 
   export const login =  async (email, password) => {
     try {
-      const response = await api.post('/auth/login', { 
+      const { data: response } = await api.post('/auth/login', { 
         email, 
         contrasena: password,
         llavepublica: null
@@ -43,7 +43,7 @@ import api from './api';
    */
     export const register = async (email, password) => {
       try {
-        const response = await api.post('/auth/register', {
+        const { data: response } = await api.post('/auth/register', {
           correo: email,
           contrasena: password,
           llavepublica: null,
@@ -82,7 +82,7 @@ import api from './api';
     }
 
     try {
-      const response = await api.get('/auth/verify');
+      const { data: response } = await api.get('/auth/verify');
       return response.user;
     } catch (error) {
       if (error.response && error.response.status === 401) {
