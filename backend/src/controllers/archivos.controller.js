@@ -58,14 +58,14 @@ exports.guardarArchivo = async (req, res) => {
     const archivoCifradoNombre = `${archivo.originalname}`;
     const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivoCifradoNombre);
 
-    fs.writeFileSync(archivoCifradoPath, signature ? signature : archivoCifrado ? archivoCifrado : hash);
+    fs.writeFileSync(archivoCifradoPath, signature);
 
     // Guardar en BD
     let nuevoArchivo = await Archivo.findOne({ where: { nombre: archivo.originalname } });
     if (nuevoArchivo) {
       nuevoArchivo.correo = req.user.correo;
       nuevoArchivo.nombre = archivo.originalname;
-      nuevoArchivo.contenido = archivoCifrado ? archivoCifrado : null;
+      nuevoArchivo.contenido = archivoContenido;
       nuevoArchivo.hash = hash;
       nuevoArchivo.firma = signature ? signature : null;
       nuevoArchivo.tipofirma = firmar === "true" ? tipoFirma : (firmar === "false" && tipoFirma === "RSA" ? "RSA" : tipoFirma);
@@ -75,7 +75,7 @@ exports.guardarArchivo = async (req, res) => {
       nuevoArchivo = await Archivo.create({
         correo: req.user.correo,
         nombre: archivo.originalname, // seguramente tendre que cambiarlo a archivoCifradoNombre
-        contenido: archivoCifrado ? archivoCifrado : null,
+        contenido: archivoContenido,
         hash,
         firma: signature ? signature : null,
         tipofirma: firmar === "true" ? tipoFirma : (firmar === "false" && tipoFirma === "RSA" ? "RSA" : tipoFirma),
@@ -107,25 +107,12 @@ exports.descargarArchivo = async (req, res) => {
       return res.status(404).json({ error: "Archivo no encontrado" });
     }
 
-    // Ruta del archivo cifrado
-    const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivo.nombre);
-
-    // Verificar si el archivo existe en el sistema de archivos
-    if (!fs.existsSync(archivoCifradoPath)) {
-      return res.status(404).json({ error: "Archivo cifrado no encontrado en el servidor" });
-    }
-
     // Configurar encabezados
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(archivo.nombre)}`);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${archivo.nombre}`);
     res.setHeader('Content-Type', 'application/octet-stream');
 
     // Enviar el archivo
-    res.download(archivoCifradoPath, archivo.nombre, (err) => {
-      if (err) {
-        console.error("Error al enviar el archivo:", err);
-        res.status(500).json({ error: "Error al descargar el archivo" });
-      }
-    });
+    res.send(archivo.contenido);
   } catch (error) {
     console.error("Error al descargar el archivo:", error);
     res.status(500).json({ error: "Error al descargar el archivo" });
