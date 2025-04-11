@@ -42,19 +42,21 @@ $transition: all 0.3s ease;
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.8rem;
   margin-bottom: 1.5rem;
   position: relative;
-  padding: 1.25rem;
-  background-color: rgba($white, 0.8);
+  padding: 1.5rem;
+  background-color: rgba($white, 0.9); 
   border-radius: $border-radius;
   box-shadow: $box-shadow;
   transition: $transition;
   border: 1px solid rgba($primary-light, 0.3);
+  overflow: hidden; 
 
   &:hover {
     border-color: $primary;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px); 
   }
 
   &:focus-within {
@@ -64,10 +66,9 @@ $transition: all 0.3s ease;
     background-color: $white;
   }
 
-  // Para grupos de formulario con error
   &.error {
     border-color: rgba($error, 0.3);
-    background-color: rgba($error, 0.05);
+    background-color: rgba($error, 0.08); // Ligero aumento de opacidad
 
     &:hover {
       border-color: $error;
@@ -79,10 +80,9 @@ $transition: all 0.3s ease;
     }
   }
 
-  // Para grupos de formulario exitosos
   &.success {
     border-color: rgba($success, 0.3);
-    background-color: rgba($success, 0.05);
+    background-color: rgba($success, 0.08);
 
     &:hover {
       border-color: $success;
@@ -94,21 +94,22 @@ $transition: all 0.3s ease;
     }
   }
 
-  // Efecto de acento decorativo
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 4px;
+    width: 5px;
     height: 100%;
     background-color: $secondary;
     border-radius: $border-radius 0 0 $border-radius;
     transition: $transition;
+    z-index: 1;
   }
 
   &:hover::before {
     background-color: $primary;
+    width: 6px; 
   }
 
   &.error::before {
@@ -117,6 +118,87 @@ $transition: all 0.3s ease;
 
   &.success::before {
     background-color: $success;
+  }
+
+  .textAreaLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    position: relative;
+    z-index: 2; 
+  }
+
+  .textAreaText {
+    color: $text-dark;
+    font-size: 0.95rem;
+    font-weight: 600; 
+    transition: $transition;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:hover {
+      color: $primary;
+    }
+  }
+
+  .textArea {
+    padding: 1rem;
+    border: 1px solid darken($background, 12%);
+    border-radius: calc($border-radius - 2px); 
+    background-color: $white;
+    color: $text-dark;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace; 
+    min-height: 140px;
+    resize: vertical;
+    transition: $transition;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); 
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1),
+                  0 0 0 2px rgba($primary-light, 0.2);
+    }
+    
+    &:hover:not(:disabled) {
+      border-color: $primary;
+    }
+    
+    &:disabled {
+      background-color: lighten($background, 5%);
+      cursor: not-allowed;
+      opacity: 0.9;
+      &::placeholder {
+        color: lighten($text-light, 30%);
+      }
+    }
+    
+    &::placeholder {
+      color: lighten($text-light, 25%);
+      font-style: italic;
+      font-family: inherit; 
+      transition: $transition;
+    }
+
+    &:focus::placeholder {
+      color: transparent;
+    }
+  }
+
+  &.with-icon {
+    padding-left: 3.5rem;
+    
+    &::after {
+      content: '🔑'; 
+      position: absolute;
+      left: 1.5rem;
+      top: 1.5rem;
+      font-size: 1.2rem;
+      opacity: 0.7;
+      z-index: 1;
+    }
   }
 }
 
