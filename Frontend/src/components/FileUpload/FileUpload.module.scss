@@ -43,6 +43,81 @@ $transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding: 1.25rem;
+  background-color: rgba($white, 0.8);
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  transition: $transition;
+  border: 1px solid rgba($primary-light, 0.3);
+
+  &:hover {
+    border-color: $primary;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:focus-within {
+    border-color: $primary-light;
+    box-shadow: 0 0 0 3px rgba($primary-light, 0.2),
+                $box-shadow;
+    background-color: $white;
+  }
+
+  // Para grupos de formulario con error
+  &.error {
+    border-color: rgba($error, 0.3);
+    background-color: rgba($error, 0.05);
+
+    &:hover {
+      border-color: $error;
+    }
+
+    &:focus-within {
+      border-color: $error;
+      box-shadow: 0 0 0 3px rgba($error, 0.2);
+    }
+  }
+
+  // Para grupos de formulario exitosos
+  &.success {
+    border-color: rgba($success, 0.3);
+    background-color: rgba($success, 0.05);
+
+    &:hover {
+      border-color: $success;
+    }
+
+    &:focus-within {
+      border-color: $success;
+      box-shadow: 0 0 0 3px rgba($success, 0.2);
+    }
+  }
+
+  // Efecto de acento decorativo
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: $secondary;
+    border-radius: $border-radius 0 0 $border-radius;
+    transition: $transition;
+  }
+
+  &:hover::before {
+    background-color: $primary;
+  }
+
+  &.error::before {
+    background-color: $error;
+  }
+
+  &.success::before {
+    background-color: $success;
+  }
 }
 
 .fileInputLabel {
