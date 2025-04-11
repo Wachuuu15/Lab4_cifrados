@@ -29,7 +29,7 @@ const Archivo = sequelize.define("Archivo", {
     },
     tipofirma: {
     type: DataTypes.STRING(10),
-    allowNull: false
+    allowNull: true
     }
 }, {
     tableName: "archivos", // Nombre exacto de la tabla en la BD

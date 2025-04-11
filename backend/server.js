@@ -8,7 +8,8 @@ const app = express();
 
 app.use(cors({
   origin: "http://localhost:5173", // origen del frontend
-  credentials: true
+  credentials: true,
+  exposedHeaders: ["Content-Disposition"],
 }));
 
 // Middleware

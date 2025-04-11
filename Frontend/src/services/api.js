@@ -47,13 +47,13 @@ api.interceptors.response.use((response) => {
 // Métodos 
 export const downloadFile = async (url, defaultName, onDownloadProgress) => {
   try {
-    const response = await api.get(url, {
+    const { data, headers } = await api.get(url, {
       responseType: 'blob',
       onDownloadProgress,
     });
 
     // Obtener nombre del archivo del header Content-Disposition
-    const contentDisposition = response.headers['content-disposition'];
+    const contentDisposition = headers['content-disposition'];
     let fileName = defaultName;
 
     if (contentDisposition) {
@@ -72,8 +72,8 @@ export const downloadFile = async (url, defaultName, onDownloadProgress) => {
 
     return {
       fileName,
-      blob: new Blob([response.data]),
-      mimeType: response.headers['content-type'],
+      blob: new Blob([data]),
+      mimeType: headers['content-type'],
     };
   } catch (error) {
     console.error('Error en downloadFile:', error);

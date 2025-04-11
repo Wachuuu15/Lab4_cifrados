@@ -47,19 +47,12 @@ exports.guardarArchivo = async (req, res) => {
         signature = signer.sign(clavePrivadaClean, "hex");
       }
       
-    } else { // Cifrar el archivo con RSA usando la clave privada. (SOLO SI el usuario creo sus llaves con RSA)
-      if (tipoFirma === "RSA") {
-        archivoCifrado = crypto.publicEncrypt(
-          { key: usuario.llavepublica, padding: crypto.constants.RSA_PKCS1_PADDING },
-          bufferArchivo
-        );
-      }
     }
 
     const archivoCifradoNombre = `${archivo.originalname}`;
     const archivoCifradoPath = path.join(__dirname, "../../../archivosCifrados", archivoCifradoNombre);
 
-    fs.writeFileSync(archivoCifradoPath, signature);
+    fs.writeFileSync(archivoCifradoPath, signature ? signature : archivoContenido, "utf-8");
 
     // Guardar en BD
     let nuevoArchivo = await Archivo.findOne({ where: { nombre: archivo.originalname } });
@@ -69,7 +62,7 @@ exports.guardarArchivo = async (req, res) => {
       nuevoArchivo.contenido = archivoContenido;
       nuevoArchivo.hash = hash;
       nuevoArchivo.firma = signature ? signature : null;
-      nuevoArchivo.tipofirma = firmar === "true" ? tipoFirma : (firmar === "false" && tipoFirma === "RSA" ? "RSA" : tipoFirma);
+      nuevoArchivo.tipofirma = firmar === "true" ? tipoFirma : null;
       await nuevoArchivo.save();
     }
     else {
@@ -109,7 +102,7 @@ exports.descargarArchivo = async (req, res) => {
     }
 
     // Configurar encabezados
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${archivo.nombre}`);
+    res.setHeader('Content-Disposition', `attachment; filename=${archivo.nombre}`);
     res.setHeader('Content-Type', 'application/octet-stream');
 
     // Enviar el archivo
