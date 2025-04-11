@@ -3,6 +3,7 @@ const User = require("../models/user.model");
 const fs = require("fs");
 const path = require("path");
 const Archivo = require("../models/archivo.model");
+const { Op } = require('sequelize');
 
 exports.guardarArchivo = async (req, res) => {
   try {
@@ -134,27 +135,32 @@ exports.verificarArchivo = async (req, res) => {
 
     // Buscar al usuario por su correo
     const usuario = await User.findOne({ where: { correo } });
-    const archivoEnBase = await Archivo.findOne({ where: { correo: correo , nombre: archivo.originalname } });
+    const nombreSinExtension = archivo.originalname.replace(/\.[^.]*$/, '');
+    const archivoEnBase = await Archivo.findOne({ 
+      where: { 
+        nombre: { [Op.like]: `%${nombreSinExtension}%` }
+      } 
+    });
     if (!usuario || !usuario.llavepublica) {
       return res.status(404).json({ error: "Usuario no encontrado o sin llave pública" });
     }
 
     const clavePublica = usuario.llavepublica;
-    const firma = archivoEnBase.firma;
+    const firmaHex = archivoEnBase.firma;
 
-    // Leer contenido del archivo
-    const contenido = fs.readFileSync(archivo.path);
+    // Leer el archivo subido (contenido original sin firmar)
+    const contenidoOriginal = Buffer.from(archivoEnBase.contenido, "utf-8");
 
-    // Generar hash SHA-256
-    const hash = crypto.createHash("sha256").update(contenido).digest("hex");
+    // Generar hash del archivo subido
+    const hash = crypto.createHash("sha256").update(contenidoOriginal).digest("hex");
 
-    // Verificar firma
+    // Verificar firma usando el hash
     const verifier = crypto.createVerify("SHA256");
     verifier.update(hash);
     verifier.end();
+
     const clavePublicaClean = clavePublica.replace(/\n/g, '\n');
-    
-    const esValida = verifier.verify(clavePublicaClean, firma, "hex");
+    const esValida = verifier.verify(clavePublicaClean, firmaHex, "hex");
 
     fs.unlinkSync(archivo.path); // Eliminar archivo temporal
 
