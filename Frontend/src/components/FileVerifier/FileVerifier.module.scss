@@ -43,6 +43,70 @@ $transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+
+  .formLabel {
+    color: $text-dark;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: $transition;
+    
+    &:hover {
+      color: $primary;
+    }
+  }
+
+  .input {
+    padding: 0.75rem 1rem;
+    border: 1px solid darken($background, 10%);
+    border-radius: $border-radius;
+    background-color: $white;
+    color: $text-dark;
+    font-size: 1rem;
+    transition: $transition;
+    box-shadow: $box-shadow;
+    
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+      box-shadow: 0 0 0 3px rgba($primary-light, 0.2);
+    }
+    
+    &:hover {
+      border-color: $primary;
+    }
+    
+    &::placeholder {
+      color: lighten($text-light, 20%);
+    }
+  }
+
+  // Estilo para cuando hay error (opcional)
+  &.error {
+    .formLabel {
+      color: $error;
+    }
+    
+    .input {
+      border-color: $error;
+      
+      &:focus {
+        box-shadow: 0 0 0 3px rgba($error, 0.2);
+      }
+    }
+  }
+
+  // Estilo para cuando es válido (opcional)
+  &.success {
+    .formLabel {
+      color: $success;
+    }
+    
+    .input {
+      border-color: $success;
+    }
+  }
 }
 
 .fileInputLabel {

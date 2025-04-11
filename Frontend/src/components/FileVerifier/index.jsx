@@ -67,8 +67,8 @@ const FileVerifier = () => {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Correo del firmante:</label>
-          <input
+        <label className={styles.formLabel}>Correo del firmante:</label>
+        <input
             type="email"
             value={correoFirmante}
             onChange={(e) => setCorreoFirmante(e.target.value)}
